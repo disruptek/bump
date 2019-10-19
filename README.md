@@ -21,4 +21,8 @@ $ bump --target some
 
 # you can specify a particular package directory to look in
 $ bump --directory /some/where/else
+
+# a dry-run option merely shows you the future version/message
+$ bump --dry-run fixed another bug
+1.0.3: fixed another bug
 ```
