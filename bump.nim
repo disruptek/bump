@@ -65,7 +65,7 @@ proc gitOkay(args: varargs[string, `$`]): bool =
     error &"command-line failed:\n{git} " & arguments.join(" ")
 
 proc bump(major: bool = false; minor: bool = false; patch: bool = true;
-          directory = "."; target = ""; message: seq[string]) =
+          dry_run = false; directory = "."; target = ""; message: seq[string]) =
   var
     nimble: string
     repo: string
@@ -97,7 +97,8 @@ proc bump(major: bool = false; minor: bool = false; patch: bool = true;
 
   # write the new nimble over the old one and remove the temp file
   try:
-    copyFile(temp, nimble)
+    if not dry_run:
+      copyFile(temp, nimble)
   except Exception as e:
     echo e.msg
   if not tryRemoveFile(temp):
@@ -108,12 +109,13 @@ proc bump(major: bool = false; minor: bool = false; patch: bool = true;
     msg = $next
   if message.len > 0:
     msg &= ": " & message.join(" ")
+  echo msg
 
   # move to the repo so we can do git operations
   setCurrentDir(repo)
 
   # try to do some git operations
-  while true:
+  while not dry_run:
     # commit the nimble file
     if not gitOkay("commit", "-m", msg, nimble):
       break
@@ -134,8 +136,9 @@ proc bump(major: bool = false; minor: bool = false; patch: bool = true;
     echo "bumped to " & $next
     quit(0)
 
-  # we failed at our nimgitsfu
-  quit(1)
+  if not dry_run:
+    # we failed at our nimgitsfu
+    quit(1)
 
 when isMainModule:
   import cligen
