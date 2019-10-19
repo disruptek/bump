@@ -95,10 +95,6 @@ proc bump(major: bool = false; minor: bool = false; patch: bool = true;
     writer.writeLine &"""version = "{next}""""
   writer.close
 
-  assert next.major == 0
-  assert next.minor == 0
-  assert next.patch == 2
-
   # write the new nimble over the old one and remove the temp file
   try:
     copyFile(temp, nimble)
