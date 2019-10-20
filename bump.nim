@@ -120,6 +120,10 @@ proc bump(major: bool = false; minor: bool = false; patch: bool = true;
     if not gitOkay("commit", "-m", msg, nimble):
       break
 
+    # if a tag message exists, omit the version
+    if message.len > 0:
+      msg = message.join(" ")
+
     # tag the release
     if not gitOkay("tag", "-a", "-m", msg, $next):
       break
@@ -133,7 +137,7 @@ proc bump(major: bool = false; minor: bool = false; patch: bool = true;
       break
 
     # we're done
-    echo "bumped to " & $next
+    echo "bumped."
     quit(0)
 
   if not dry_run:
