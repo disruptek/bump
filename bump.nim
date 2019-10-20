@@ -51,20 +51,24 @@ proc bumpVersion(ver: Version; major, minor, patch: bool = false): Version =
 proc `$`(ver: Version): string =
   result = &"{ver.major}.{ver.minor}.{ver.patch}"
 
-proc gitOkay(args: varargs[string, `$`]): bool =
+proc runWith(exe: string; args: varargs[string, `$`]): bool =
   let
-    git = findExe("git")
+    path = findExe(exe)
+  if path == "":
+    error &"unable to find executable `{exe}` in path"
+    return false
+
   var
     process: Process
     arguments: seq[string]
   for n in args:
     arguments.add n
-  process = startProcess(git, args = arguments, options = {})
+  process = path.startProcess(args = arguments, options = {})
   result = process.waitForExit == 0
   if not result:
-    error &"command-line failed:\n{git} " & arguments.join(" ")
+    error &"command-line failed:\n{exe} " & arguments.join(" ")
 
-proc bump(major: bool = false; minor: bool = false; patch: bool = true;
+proc bump(major = false; minor = false; patch = true; release = false;
           dry_run = false; directory = "."; target = ""; message: seq[string]) =
   var
     nimble: string
@@ -76,9 +80,8 @@ proc bump(major: bool = false; minor: bool = false; patch: bool = true;
     found = findOneNimble(directory, target = target)
   if found.isNone:
     return
-  else:
-    nimble = found.get
-    repo = parentDir(nimble)
+  nimble = found.get
+  repo = parentDir(nimble)
 
   # make a temp file and rewrite it
   let
@@ -117,7 +120,7 @@ proc bump(major: bool = false; minor: bool = false; patch: bool = true;
   # try to do some git operations
   while not dry_run:
     # commit the nimble file
-    if not gitOkay("commit", "-m", msg, nimble):
+    if not "git".runWith("commit", "-m", msg, nimble):
       break
 
     # if a tag message exists, omit the version
@@ -125,16 +128,21 @@ proc bump(major: bool = false; minor: bool = false; patch: bool = true;
       msg = message.join(" ")
 
     # tag the release
-    if not gitOkay("tag", "-a", "-m", msg, $next):
+    if not "git".runWith("tag", "-a", "-m", msg, $next):
       break
 
     # push the commit
-    if not gitOkay("push"):
+    if not "git".runWith("push"):
       break
 
     # push the tag
-    if not gitOkay("push", "--tags"):
+    if not "git".runWith("push", "--tags"):
       break
+
+    # we might want to use hub to mark a github release
+    if release:
+      if not "hub".runWith("release", "create", "-m", msg, $next):
+        break
 
     # we're done
     echo "bumped."
