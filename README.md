@@ -2,6 +2,8 @@
 
 It just bumps your `.nimble` file versions, commits it, tags it, and pushes it.
 
+`hub` from https://github.com/github/hub enables GitHub-specific functionality.
+
 ## Usage
 ```
 # start here
