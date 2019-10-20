@@ -19,11 +19,11 @@ $ bump fixed a bug
 
 # you should add minors when you add functionality
 $ bump --minor added a new feature
-2.1.1: added a new feature
+2.1.0: added a new feature
 
 # a dry-run option merely shows you the future version/message
 $ bump --dry-run fixed another bug
-2.1.2: fixed another bug
+2.1.1: fixed another bug
 
 # if you have `hub` installed, you can also mark a GitHub release
 $ bump --minor --release add release option
