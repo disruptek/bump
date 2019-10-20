@@ -47,6 +47,9 @@ proc bumpVersion(ver: Version; major, minor, patch: bool = false): Version =
     result = (ver.major, ver.minor + 1, 0)
   elif patch:
     result = (ver.major, ver.minor, ver.patch + 1)
+  else:
+    error "version unchanged"
+    result = ver
 
 proc `$`(ver: Version): string =
   result = &"{ver.major}.{ver.minor}.{ver.patch}"
