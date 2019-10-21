@@ -23,15 +23,12 @@ else:
 method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
   {.locks: "unknown", raises: [].} =
   var
-    via: Level
     prefix: string
     arguments: seq[string]
   for a in args:
     arguments.add a
-  via = level
   case level:
-  of lvlFatal:
-    prefix = "💣"
+  of lvlFatal: discard
   of lvlError:
     prefix = "💥"
   of lvlWarn:
@@ -42,12 +39,9 @@ method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
     prefix = "✔️"
   of lvlDebug:
     prefix = "🐛"
-  of lvlAll:
-    via = lvlNotice
-  of lvlNone:
-    via = lvlFatal
+  of lvlAll, lvlNone: discard
   try:
-    logger.forward.log(via, prefix & arguments.join(" "))
+    logger.forward.log(level, prefix & arguments.join(" "))
   except:
     discard
 
@@ -190,7 +184,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     msg = $next
   if message.len > 0:
     msg &= ": " & message.join(" ")
-  log(lvlAll, &"🎉{msg}")
+  fatal &"🎉{msg}"
 
   if dry_run:
     debug "dry run and done"
@@ -236,7 +230,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
         break
 
     # we're done
-    log(lvlAll, "🍻bumped")
+    fatal "🍻bumped"
     return
 
   error "nimgitsfu fail"
