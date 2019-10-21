@@ -22,6 +22,7 @@ else:
 
 method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
   {.locks: "unknown", raises: [].} =
+  ## anything that isn't fatal gets a cute emoji
   var
     prefix: string
     arguments: seq[string]
@@ -46,6 +47,7 @@ method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
     discard
 
 template crash(why: string) =
+  ## a good way to exit bump()
   fatal why
   return 1
 
@@ -56,6 +58,8 @@ proc `$`*(ver: Version): string =
   result = &"{ver.major}.{ver.minor}.{ver.patch}"
 
 proc findTarget*(dir: string; target = ""): Option[Target] =
+  ## locate one, and only one, nimble file to work upon;
+  ## dir is where to look, target is a .nimble or package name
   block found:
     for component, filename in walkDir(dir):
       if not filename.endsWith(".nimble") or component != pcFile:
