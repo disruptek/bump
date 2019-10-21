@@ -126,7 +126,7 @@ proc run*(exe: string; args: varargs[string, `$`]): bool =
   else:
     notice ran
 
-proc bump*(major = false; minor = false; patch = true; release = false;
+proc bump*(minor = false; major = false; patch = true; release = false;
           dry_run = false; directory = "."; target = ""; log_level = logLevel;
           message: seq[string]): int =
   ## the entry point from the cli
