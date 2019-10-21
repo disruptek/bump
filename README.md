@@ -29,6 +29,9 @@ $ bump --dry-run fixed another bug
 $ bump --minor --release add release option
 2.2.0: add release option
 
+# optionally set the Nim logging level for more spam
+$ bump --log lvlDebug
+
 # optionally specify a particular .nimble file to work on
 $ bump --target some.nimble
 $ bump --target some

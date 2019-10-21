@@ -6,59 +6,109 @@ import strformat
 import nre
 import logging
 
-import cligen
 
 type
-  Version = tuple[major: int; minor: int; patch: int]
+  Version* = tuple[major: int; minor: int; patch: int]
+  Target* = tuple[repo: string; package: string; ext: string]
+  CuteLogger = ref object of Logger
+    forward: Logger
 
-proc findOneNimble*(dir: string; target = ""): Option[string] =
+when defined(debug):
+  const logLevel = lvlDebug
+elif defined(release) or defined(danger):
+  const logLevel = lvlNotice
+else:
+  const logLevel = lvlInfo
+
+method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
+  {.locks: "unknown", raises: [].} =
+  var
+    via: Level
+    prefix: string
+    arguments: seq[string]
+  for a in args:
+    arguments.add a
+  via = level
+  case level:
+  of lvlFatal:
+    prefix = "💣"
+  of lvlError:
+    prefix = "💥"
+  of lvlWarn:
+    prefix = "⚠️"
+  of lvlNotice:
+    prefix = "❌"
+  of lvlInfo:
+    prefix = "✔️"
+  of lvlDebug:
+    prefix = "🐛"
+  of lvlAll:
+    via = lvlNotice
+  of lvlNone:
+    via = lvlFatal
+  try:
+    logger.forward.log(via, prefix & arguments.join(" "))
+  except:
+    discard
+
+template crash(why: string) =
+  fatal why
+  return 1
+
+proc `$`*(target: Target): string =
+  result = target.repo / target.package & target.ext
+
+proc `$`*(ver: Version): string =
+  result = &"{ver.major}.{ver.minor}.{ver.patch}"
+
+proc findTarget*(dir: string; target = ""): Option[Target] =
   block found:
-    for component, filename in walkDir("."):
+    for component, filename in walkDir(dir):
       if not filename.endsWith(".nimble") or component != pcFile:
         continue
       if target != "" and filename notin [target, target & ".nimble"]:
         continue
       if result.isSome:
-        error "many .nimble files in `{dir}`: `{result.get}` and `{filename}`"
+        warn &"found `{result.get}` and `{filename}` in `{dir}`"
         break found
-      result = some(filename)
+      let splat = filename.absolutePath.splitFile
+      result = (repo: splat.dir, package: splat.name, ext: splat.ext).some
+    # we set result only once, so this is a some(Target) return
     return
-  result = none(string)
+  result = none(Target)
 
 proc createTemporaryFile*(prefix: string; suffix: string): string =
   ## it should create the file, but so far, it doesn't
   let temp = getTempDir()
-  result = temp / "bump-" & $getCurrentProcessId() & prefix & suffix
+  result = temp / "bump-" & $getCurrentProcessId() & "-" & prefix & suffix
 
-proc parseVersion(line: string): Version =
+proc parseVersion*(line: string): Option[Version] =
+  ## parse a version specifier line from the .nimble file
   let
-    verex = line.match re(r"""^version = "(\d+).(\d+).(\d+)"""")
+    verex = line.match re(r"""^version = "(\d+).(\d+).(\d+)"""") # " 🙄
   if not verex.isSome:
-    error "unable to parse version"
+    return
   let cap = verex.get.captures.toSeq
   result = (major: cap[0].get.parseInt,
             minor: cap[1].get.parseInt,
-            patch: cap[2].get.parseInt)
+            patch: cap[2].get.parseInt).some
 
-proc bumpVersion(ver: Version; major, minor, patch: bool = false): Version =
+proc bumpVersion*(ver: Version; major, minor, patch = false): Option[Version] =
+  ## increment the version by the specified metric
   if major:
-    result = (ver.major + 1, 0, 0)
+    result = (ver.major + 1, 0, 0).some
   elif minor:
-    result = (ver.major, ver.minor + 1, 0)
+    result = (ver.major, ver.minor + 1, 0).some
   elif patch:
-    result = (ver.major, ver.minor, ver.patch + 1)
-  else:
-    error "version unchanged"
-    result = ver
+    result = (ver.major, ver.minor, ver.patch + 1).some
 
-proc `$`(ver: Version): string =
-  result = &"{ver.major}.{ver.minor}.{ver.patch}"
-
-proc runWith(exe: string; args: varargs[string, `$`]): bool =
+proc run*(exe: string; args: varargs[string, `$`]): bool =
+  ## find and run a given executable with the given arguments;
+  ## the result is true if it seemed to work
   let
     path = findExe(exe)
   if path == "":
-    error &"unable to find executable `{exe}` in path"
+    warn &"unable to find executable `{exe}` in path"
     return false
 
   var
@@ -66,104 +116,138 @@ proc runWith(exe: string; args: varargs[string, `$`]): bool =
     arguments: seq[string]
   for n in args:
     arguments.add n
+  let
+    ran = exe & " " & arguments.join(" ")
+  debug path, arguments.join(" ")
   process = path.startProcess(args = arguments, options = {})
   result = process.waitForExit == 0
-  if not result:
-    error &"command-line failed:\n{exe} " & arguments.join(" ")
+  if result:
+    info ran
+  else:
+    notice ran
 
-proc bump(major = false; minor = false; patch = true; release = false;
-          dry_run = false; directory = "."; target = ""; message: seq[string]) =
+proc bump*(major = false; minor = false; patch = true; release = false;
+          dry_run = false; directory = "."; target = ""; log_level = logLevel;
+          message: seq[string]): int =
+  ## the entry point from the cli
   var
-    nimble: string
-    repo: string
-    past, next: Version
+    nimble: Target
+    next: Version
 
-  # find git and the targetted .nimble file
+  # user's choice, our default
+  setLogFilter(log_level)
+
+  # find the targeted .nimble file
+  debug &"search `{directory}` for `{target}`"
   let
-    found = findOneNimble(directory, target = target)
+    found = findTarget(directory, target = target)
   if found.isNone:
-    return
-  nimble = found.get
-  repo = parentDir(nimble)
+    crash &"couldn't pick a .nimble from dir `{directory}` and target `{target}`"
+  else:
+    debug "found", found.get
+    nimble = found.get
 
-  # make a temp file and rewrite it
+  # make a temp file in an appropriate spot, with a significant name
   let
-    temp = createTemporaryFile("", ".nimble")
-  var writer = temp.open(fmWrite)
-  for line in nimble.lines:
-    if not line.startsWith("version = "):
-      writer.writeLine line
-      continue
+    temp = createTemporaryFile(nimble.package, ".nimble")
+  debug &"writing {temp}"
+  # but remember to remove the temp file later
+  defer:
+    debug &"removing {temp}"
+    if not tryRemoveFile(temp):
+      warn &"unable to remove temporary file `{temp}`"
 
-    # bump the version number
-    past = line.parseVersion
-    next = past.bumpVersion(major, minor, patch)
-    writer.writeLine &"""version = "{next}""""
-  writer.close
+  block writing:
+    # open our temp file for writing
+    var
+      writer = temp.open(fmWrite)
+    # but remember to close the temp file in any event
+    defer:
+      writer.close
+    for line in lines($nimble):
+      if not line.startsWith("version = "):
+        writer.writeLine line
+        continue
 
-  # write the new nimble over the old one and remove the temp file
-  try:
-    if not dry_run:
-      copyFile(temp, nimble)
-  except Exception as e:
-    echo e.msg
-  if not tryRemoveFile(temp):
-    quit "unable to remove temporary file `{temp}`"
+      # bump the version number
+      let
+        last = line.parseVersion
+      if last.isNone:
+        crash &"unable to parse version from `{line}`"
+      else:
+        debug "current version is", last.get
+      let
+        bumped = last.get.bumpVersion(major, minor, patch)
+      if bumped.isNone:
+        crash "version unchanged; specify major, minor, or patch"
+      else:
+        debug "next version is", bumped.get
+      next = bumped.get
+      writer.writeLine &"""version = "{next}"""" # " 🙄
 
   # make a git commit message
   var
     msg = $next
   if message.len > 0:
     msg &= ": " & message.join(" ")
-  echo msg
+  log(lvlAll, &"🎉{msg}")
+
+  if dry_run:
+    debug "dry run and done"
+    return
+
+  # copy the new .nimble over the old one
+  try:
+    debug &"copying {temp} over", nimble
+    copyFile(temp, $nimble)
+  except Exception as e:
+    discard e # noqa 😞
+    crash &"failed to copy `{temp}` to `{nimble}`: {e.msg}"
 
   # move to the repo so we can do git operations
-  setCurrentDir(repo)
+  debug "changing directory to", nimble.repo
+  setCurrentDir(nimble.repo)
 
   # try to do some git operations
-  while not dry_run:
+  while true:
     # commit the nimble file
-    if not "git".runWith("commit", "-m", msg, nimble):
+    if not run("git", "commit", "-m", msg, nimble):
       break
 
-    # if a tag message exists, omit the version
+    # if a message exists, omit the version from the tag
     if message.len > 0:
       msg = message.join(" ")
 
-    # tag the release
-    if not "git".runWith("tag", "-a", "-m", msg, $next):
+    # tag the commit with the new version
+    if not run("git", "tag", "-a", "-m", msg, next):
       break
 
     # push the commit
-    if not "git".runWith("push"):
+    if not run("git", "push"):
       break
 
     # push the tag
-    if not "git".runWith("push", "--tags"):
+    if not run("git", "push", "--tags"):
       break
 
     # we might want to use hub to mark a github release
     if release:
-      if not "hub".runWith("release", "create", "-m", msg, $next):
+      if not run("hub", "release", "create", "-m", msg, next):
         break
 
     # we're done
-    echo "bumped."
-    quit(0)
+    log(lvlAll, "🍻bumped")
+    return
 
-  if not dry_run:
-    # we failed at our nimgitsfu
-    quit(1)
+  error "nimgitsfu fail"
+  return 1
 
 when isMainModule:
   import cligen
-  import logging
 
-  when defined(release) or defined(danger):
-    let level = lvlWarn
-  else:
-    let level = lvlAll
-  let logger = newConsoleLogger(useStderr=true, levelThreshold=level)
+  let
+    console = newConsoleLogger(levelThreshold = logLevel,
+                               useStderr = true, fmtStr = "")
+    logger = CuteLogger(forward: console)
   addHandler(logger)
-
   dispatch bump
