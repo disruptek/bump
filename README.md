@@ -39,3 +39,6 @@ $ bump --target some
 # optionally specify a particular package directory to look in
 $ bump --directory /some/where/else
 ```
+
+## License
+MIT
