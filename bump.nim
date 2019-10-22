@@ -50,7 +50,7 @@ method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
 
 template crash(why: string) =
   ## a good way to exit bump()
-  fatal why
+  error why
   return 1
 
 proc `$`*(target: Target): string =
@@ -183,13 +183,15 @@ proc bump*(minor = false; major = false; patch = true; release = false;
         writer.writeLine line
         continue
 
-      # bump the version number
+      # parse the current version number
       let
         last = line.parseVersion
       if last.isNone:
         crash &"unable to parse version from `{line}`"
       else:
         debug "current version is", last.get
+
+      # bump the version number
       let
         bumped = last.get.bumpVersion(major, minor, patch)
       if bumped.isNone:
@@ -197,6 +199,8 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       else:
         debug "next version is", bumped.get
       next = bumped.get
+
+      # make a subtle edit to the version string and write it out
       writer.writeLine next.withCrazySpaces(line)
 
   # make a git commit message
@@ -206,6 +210,8 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   var msg = tag
   if message.len > 0:
     msg &= ": " & message.join(" ")
+
+  # cheer
   fatal &"🎉{msg}"
 
   if dry_run:
@@ -251,11 +257,12 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       if not run("hub", "release", "create", "-m", msg, tag):
         break
 
-    # we're done
+    # celebrate
     fatal "🍻bumped"
     return
 
-  error "nimgitsfu fail"
+  # hang our head in shame
+  fatal "🐼nimgitsfu fail"
   return 1
 
 when isMainModule:
