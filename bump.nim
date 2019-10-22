@@ -85,7 +85,7 @@ proc createTemporaryFile*(prefix: string; suffix: string): string =
 proc parseVersion*(line: string): Option[Version] =
   ## parse a version specifier line from the .nimble file
   let
-    verex = line.match re(r"""^version = "(\d+).(\d+).(\d+)"""")
+    verex = line.match re(r"""^version\s*=\s*"(\d+).(\d+).(\d+)"""")
   if not verex.isSome:
     return
   let cap = verex.get.captures.toSeq
@@ -165,7 +165,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     defer:
       writer.close
     for line in lines($nimble):
-      if not line.startsWith("version = "):
+      if not line.contains(re"^version\s*="):
         writer.writeLine line
         continue
 
