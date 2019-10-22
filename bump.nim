@@ -29,7 +29,8 @@ method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
   for a in args:
     arguments.add a
   case level:
-  of lvlFatal: discard
+  of lvlFatal:   # use this level for our most critical outputs
+    prefix = ""  # and don't prefix them with a glyph
   of lvlError:
     prefix = "💥"
   of lvlWarn:
@@ -40,7 +41,8 @@ method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
     prefix = "✔️"
   of lvlDebug:
     prefix = "🐛"
-  of lvlAll, lvlNone: discard
+  of lvlAll, lvlNone:  # fwiw, this method is never called with these
+    discard
   try:
     logger.forward.log(level, prefix & arguments.join(" "))
   except:
@@ -83,7 +85,7 @@ proc createTemporaryFile*(prefix: string; suffix: string): string =
 proc parseVersion*(line: string): Option[Version] =
   ## parse a version specifier line from the .nimble file
   let
-    verex = line.match re(r"""^version = "(\d+).(\d+).(\d+)"""") # " 🙄
+    verex = line.match re(r"""^version = "(\d+).(\d+).(\d+)"""")
   if not verex.isSome:
     return
   let cap = verex.get.captures.toSeq
@@ -140,7 +142,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   let
     found = findTarget(directory, target = target)
   if found.isNone:
-    crash &"couldn't pick a .nimble from dir `{directory}` and target `{target}`"
+    crash &"couldn't pick a .nimble from dir `{directory}` & target `{target}`"
   else:
     debug "found", found.get
     nimble = found.get
@@ -181,7 +183,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       else:
         debug "next version is", bumped.get
       next = bumped.get
-      writer.writeLine &"""version = "{next}"""" # " 🙄
+      writer.writeLine &"""version = "{next}""""
 
   # make a git commit message
   var
