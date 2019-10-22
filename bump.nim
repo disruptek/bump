@@ -143,7 +143,7 @@ proc run*(exe: string; args: varargs[string, `$`]): bool =
 
 proc bump*(minor = false; major = false; patch = true; release = false;
           dry_run = false; folder = "."; nimble = ""; log_level = logLevel;
-          v = false; message: seq[string]): int =
+          commit = false; v = false; message: seq[string]): int =
   ## the entry point from the cli
   var
     target: Target
@@ -233,8 +233,10 @@ proc bump*(minor = false; major = false; patch = true; release = false;
 
   # try to do some git operations
   while true:
-    # commit the nimble file
-    if not run("git", "commit", "-m", msg, target):
+    # commit just the .nimble file, or the whole repository
+    var
+      committee = if commit: target.repo else: $target
+    if not run("git", "commit", "-m", msg, committee):
       break
 
     # if a message exists, omit the tag from the message
