@@ -1,4 +1,4 @@
-version = "1.6.0"
+version = "1.7.0"
 author = "disruptek"
 description = "a tiny tool to bump nimble versions"
 license = "MIT"
