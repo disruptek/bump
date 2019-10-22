@@ -29,6 +29,10 @@ $ bump --dry-run fixed another bug
 $ bump --v only weirdos use v
 v2.1.2: only weirdos use v
 
+# you can commit the entire repo at once to consolidate commits
+$ bump --commit quick fix for simple buglet
+2.1.3: quick fix for simple buglet
+
 # if you have `hub` installed, you can also mark a GitHub release
 $ bump --minor --release add release option
 2.2.0: add release option
