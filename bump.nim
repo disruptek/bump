@@ -66,8 +66,9 @@ proc findTarget*(dir: string; target = ""): Option[Target] =
     for component, filename in walkDir(dir):
       if not filename.endsWith(".nimble") or component != pcFile:
         continue
-      if target != "" and filename notin [target, target & ".nimble"]:
-        continue
+      if target != "":
+        if filename.extractFilename notin [target, target & ".nimble"]:
+          continue
       if result.isSome:
         warn &"found `{result.get}` and `{filename}` in `{dir}`"
         break found
