@@ -141,29 +141,29 @@ proc run*(exe: string; args: varargs[string, `$`]): bool =
     notice ran
 
 proc bump*(minor = false; major = false; patch = true; release = false;
-          dry_run = false; directory = "."; target = ""; log_level = logLevel;
+          dry_run = false; folder = "."; nimble = ""; log_level = logLevel;
           v = false; message: seq[string]): int =
   ## the entry point from the cli
   var
-    nimble: Target
+    target: Target
     next: Version
 
   # user's choice, our default
   setLogFilter(log_level)
 
   # find the targeted .nimble file
-  debug &"search `{directory}` for `{target}`"
+  debug &"search `{folder}` for `{nimble}`"
   let
-    found = findTarget(directory, target = target)
+    found = findTarget(folder, target = nimble)
   if found.isNone:
-    crash &"couldn't pick a .nimble from dir `{directory}` & target `{target}`"
+    crash &"couldn't pick a .nimble from `{folder}/{nimble}`"
   else:
     debug "found", found.get
-    nimble = found.get
+    target = found.get
 
   # make a temp file in an appropriate spot, with a significant name
   let
-    temp = createTemporaryFile(nimble.package, ".nimble")
+    temp = createTemporaryFile(target.package, ".nimble")
   debug &"writing {temp}"
   # but remember to remove the temp file later
   defer:
@@ -178,7 +178,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     # but remember to close the temp file in any event
     defer:
       writer.close
-    for line in lines($nimble):
+    for line in lines($target):
       if not line.contains(re"^version\s*="):
         writer.writeLine line
         continue
@@ -220,20 +220,20 @@ proc bump*(minor = false; major = false; patch = true; release = false;
 
   # copy the new .nimble over the old one
   try:
-    debug &"copying {temp} over", nimble
-    copyFile(temp, $nimble)
+    debug &"copying {temp} over", target
+    copyFile(temp, $target)
   except Exception as e:
     discard e # noqa 😞
-    crash &"failed to copy `{temp}` to `{nimble}`: {e.msg}"
+    crash &"failed to copy `{temp}` to `{target}`: {e.msg}"
 
   # move to the repo so we can do git operations
-  debug "changing directory to", nimble.repo
-  setCurrentDir(nimble.repo)
+  debug "changing directory to", target.repo
+  setCurrentDir(target.repo)
 
   # try to do some git operations
   while true:
     # commit the nimble file
-    if not run("git", "commit", "-m", msg, nimble):
+    if not run("git", "commit", "-m", msg, target):
       break
 
     # if a message exists, omit the tag from the message
