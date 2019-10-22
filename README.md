@@ -6,16 +6,13 @@ It just bumps your `.nimble` file versions, commits it, tags it, and pushes it.
 
 ## Usage
 ```
-# start here
-$ bump --help
+# bump defaults to patch-level increments; please add commit messages
+$ bump fixed a bug
+1.0.1: fixed a bug
 
 # majors are for breaking changes
 $ bump --major
 2.0.0
-
-# bump defaults to patch-level increments; please add commit messages
-$ bump fixed a bug
-2.0.1: fixed a bug
 
 # you should add minors when you add functionality
 $ bump --minor added a new feature
@@ -46,6 +43,26 @@ $ bump --nimble some
 
 # optionally specify a particular package directory to look in
 $ bump --folder /some/where/else
+```
+
+## Complete Options via `--help`
+```
+Usage:
+  bump [optional-params] [message: string...]
+the entry point from the cli
+Options(opt-arg sep :|=|spc):
+  -h, --help                           print this cligen-erated help
+  --help-syntax                        advanced: prepend,plurals,..
+  -m, --minor        bool    false     set minor
+  --major            bool    false     set major
+  -p, --patch        bool    true      set patch
+  -r, --release      bool    false     set release
+  -d, --dry-run      bool    false     set dry_run
+  -f=, --folder=     string  "."       set folder
+  -n=, --nimble=     string  ""        set nimble
+  -l=, --log-level=  Level   lvlDebug  set log_level
+  -c, --commit       bool    false     set commit
+  -v, --v            bool    false     set v
 ```
 
 ## License
