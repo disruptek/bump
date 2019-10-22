@@ -102,6 +102,20 @@ proc bumpVersion*(ver: Version; major, minor, patch = false): Option[Version] =
   elif patch:
     result = (ver.major, ver.minor, ver.patch + 1).some
 
+proc withCrazySpaces(version: Version; line = ""): string =
+  ## insert a new version into a line which may have "crazy spaces"
+  while line != "":
+    let
+      verex = line.match re(r"""^version(\s*)=(\s*)"\d+.\d+.\d+"(\s*)""")
+    if not verex.isSome:
+      break
+    let
+      cap = verex.get.captures.toSeq
+      (c1, c2, c3) = (cap[0].get, cap[1].get, cap[2].get)
+    result = &"""version{c1}={c2}"{version}"{c3}"""
+    return
+  result = &"""version = "{version}""""
+
 proc run*(exe: string; args: varargs[string, `$`]): bool =
   ## find and run a given executable with the given arguments;
   ## the result is true if it seemed to work
@@ -183,7 +197,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       else:
         debug "next version is", bumped.get
       next = bumped.get
-      writer.writeLine &"""version = "{next}""""
+      writer.writeLine next.withCrazySpaces(line)
 
   # make a git commit message
   var
