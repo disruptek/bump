@@ -142,7 +142,7 @@ proc run*(exe: string; args: varargs[string, `$`]): bool =
 
 proc bump*(minor = false; major = false; patch = true; release = false;
           dry_run = false; directory = "."; target = ""; log_level = logLevel;
-          message: seq[string]): int =
+          v = false; message: seq[string]): int =
   ## the entry point from the cli
   var
     nimble: Target
@@ -200,8 +200,10 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       writer.writeLine next.withCrazySpaces(line)
 
   # make a git commit message
-  var
-    msg = $next
+  var tag = $next
+  if v:
+    tag = "v" & tag
+  var msg = tag
   if message.len > 0:
     msg &= ": " & message.join(" ")
   fatal &"🎉{msg}"
@@ -228,25 +230,25 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     if not run("git", "commit", "-m", msg, nimble):
       break
 
-    # if a message exists, omit the version from the tag
+    # if a message exists, omit the tag from the message
     if message.len > 0:
       msg = message.join(" ")
 
     # tag the commit with the new version
-    if not run("git", "tag", "-a", "-m", msg, next):
+    if not run("git", "tag", "-a", "-m", msg, tag):
       break
 
-    # push the commit
+    # push the commits
     if not run("git", "push"):
       break
 
-    # push the tag
+    # push the tags
     if not run("git", "push", "--tags"):
       break
 
     # we might want to use hub to mark a github release
     if release:
-      if not run("hub", "release", "create", "-m", msg, next):
+      if not run("hub", "release", "create", "-m", msg, tag):
         break
 
     # we're done

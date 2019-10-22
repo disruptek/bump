@@ -25,6 +25,10 @@ $ bump --minor added a new feature
 $ bump --dry-run fixed another bug
 2.1.1: fixed another bug
 
+# you can use --v to specify a `v` prefix to your tags
+$ bump --v only weirdos use v
+v2.1.2: only weirdos use v
+
 # if you have `hub` installed, you can also mark a GitHub release
 $ bump --minor --release add release option
 2.2.0: add release option
