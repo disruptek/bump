@@ -37,11 +37,11 @@ $ bump --minor --release add release option
 $ bump --log lvlDebug
 
 # optionally specify a particular .nimble file to work on
-$ bump --target some.nimble
-$ bump --target some
+$ bump --nimble some.nimble
+$ bump --nimble some
 
 # optionally specify a particular package directory to look in
-$ bump --directory /some/where/else
+$ bump --folder /some/where/else
 ```
 
 ## License
