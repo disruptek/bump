@@ -281,10 +281,6 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     discard e # noqa 😞
     crash &"failed to copy `{temp}` to `{target}`: {e.msg}"
 
-  # move to the repo so we can do git operations
-  debug "changing directory to", target.repo
-  setCurrentDir(target.repo)
-
   # try to do some git operations
   block nimgitsfu:
     # commit just the .nimble file, or the whole repository
