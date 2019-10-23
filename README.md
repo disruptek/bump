@@ -105,16 +105,6 @@ Optionally specify a particular `.nimble` file to work on.
 $ bump --nimble other.nimble
 🎉2.6.10
 🍻bumped
-$ bump --nimble some
-🎉2.6.11
-🍻bumped
-```
-
-Optionally specify a particular package directory to look in.
-```
-$ bump --folder /some/where/else
-🎉1.4.31
-🍻bumped
 ```
 
 ## Complete Options via `--help`
