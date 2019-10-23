@@ -71,7 +71,7 @@ $ bump strange tag ahead
 
 You can use `--v` to force the `v` prefix. This is might be necessary if you
 want a `v` prefix and you haven't created any tags yet, or if you have other
-atypical tags at the end of `git tag --list`.
+atypical tags in `git tag --list`.
 ```
 $ bump --v my first tag is a weird one
 🎉v1.0.1: my first tag is a weird one
