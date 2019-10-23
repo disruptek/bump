@@ -238,6 +238,10 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       # make a subtle edit to the version string and write it out
       writer.writeLine next.withCrazySpaces(line)
 
+  # move to the repo so we can do git operations
+  debug "changing directory to", target.repo
+  setCurrentDir(target.repo)
+
   # invent a tag and see if we should add a `v` prefix
   var tag = $next
   block veeville:
