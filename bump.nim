@@ -221,6 +221,9 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   # user's choice, our default
   setLogFilter(log_level)
 
+  if folder != "":
+    warn "the --folder option is deprecated; please use --nimble instead"
+
   # take a stab at whether our .nimble file search might be illegitimate
   let search = shouldSearch(folder, nimble)
   if search.isNone:
