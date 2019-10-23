@@ -104,7 +104,7 @@ proc bumpVersion*(ver: Version; major, minor, patch = false): Option[Version] =
   elif patch:
     result = (ver.major, ver.minor, ver.patch + 1).some
 
-proc withCrazySpaces(version: Version; line = ""): string =
+proc withCrazySpaces*(version: Version; line = ""): string =
   ## insert a new version into a line which may have "crazy spaces"
   while line != "":
     let
@@ -153,35 +153,65 @@ proc run*(exe: string; args: varargs[string]): bool =
     arguments.add n
   result = capture(exe, arguments).ok
 
-proc appearsToBeMasterBranch(): Option[bool] =
+proc appearsToBeMasterBranch*(): Option[bool] =
   ## try to determine if we're on the `master` branch
   let
     caught = capture("git", @["branch", "--show-current"])
   if not caught.ok:
     return
-  result = caught.output.contains(re"^\s*master\s*$").some
-proc tagsAppearToStartWithV(): Option[bool] =
-  ## try to determine if this project's git tags start with a `v`
-  let
+  result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^master$").some
+  debug &"appears to be master branch? {result.get}"
+
+proc fetchTagList*(): Option[string] =
+  ## simply retrieve the tags as a string; attempt to use the
+  ## later git option to sort the result by version
+  var
+    caught = capture("git", @["tag", "--sort=version:refname"])
+  if not caught.ok:
     caught = capture("git", @["tag", "--list"])
   if not caught.ok:
     return
-  var
-    splat = splitLines(caught.output, keepEol = false)
-  # get rid of any empty trailing output
-  while splat.len > 0 and splat[^1].strip == "":
-    discard splat.pop
+  result = caught.output.strip.some
+
+proc lastTagInTheList*(tagList: string): string =
+  ## lazy way to get a tag from the list, whatfer mimicking its V form
+  let
+    verex = re("(*ANYCRLF)(?i)(?m)^v?\\.?\\d+\\.\\d+\\.\\d+$")
+  for match in tagList.findAll(verex):
+    result = match
+  if result == "":
+    raise newException(ValueError, "could not identify a sane tag")
+  debug &"the last tag in the list is `{result}`"
+
+proc taggedAs*(version: Version; tagList: string): Option[string] =
+  ## try to fetch a tag that appears to match a given version
+  let
+    escaped = replace($version, ".", "\\.")
+    verex = re("(*ANYCRLF)(?i)(?m)^v?\\.?" & escaped & "$")
+  for match in tagList.findAll(verex):
+    if result.isSome:
+      debug &"got more than one tag for version {version}:"
+      debug &"`{result.get}` and `{match}`"
+      result = none(string)
+      break
+    result = match.some
+  if result.isSome:
+    debug &"version {version} was tagged as {result.get}"
+
+proc allTagsAppearToStartWithV*(tagList: string): bool =
+  ## try to determine if all of this project's tags start with a `v`
+  let
+    splat = tagList.splitLines(keepEol = false)
+    verex = re("(?i)(?x)^v\\.?\\d+\\.\\d+\\.\\d+$")
+  # if no tags exist, the result is false, right?  RIGHT?
   if splat.len == 0:
-    # if there's nothing left, let's assume there are no versions
-    debug "no tags in `git tag --list`?  that makes it easy."
-    result = false.some
-  else:
-    # we have a tag that, if lexical sort is to be believed, may
-    # represent the latest tag added.  if it looks like it starts with
-    # `v` and may be part of a version string, then yield truthiness!
-    debug "the last tag in our `git tag --list` is", splat[^1]
-    result = splat[^1].contains(re"^[vV]\.?\d").some
-  debug &"my guess as to whether we use `v` tags: {result.get}"
+    return
+  for line in splat:
+    if not line.contains(verex):
+      debug &"found a tag `{line}` which doesn't use `v`"
+      return
+  result = true
+  debug &"all tags appear to start with `v`"
 
 proc shouldSearch(folder: string; nimble: string):
   Option[tuple[dir: string; file: string]] =
@@ -217,6 +247,62 @@ proc shouldSearch(folder: string; nimble: string):
   debug &"should search `{dir}` for `{file}`"
   result = (dir: dir, file: file).some
 
+proc pluckVAndDot(input: string): string =
+  ## return any `V` or `v` prefix, perhaps with an existing `.`
+  if input[0] notin {'V', 'v'}:
+    result = ""
+  elif input[1] == '.':
+    result = input[0 .. 1]
+  else:
+    result = input[0 .. 0]
+
+proc composeTag*(last: Version; next: Version; v = false; tags = ""):
+  Option[string] =
+  ## invent a tag given last and next version, magically adding any
+  ## needed `v` prefix.  fetches tags if a tag list isn't supplied.
+  var
+    tag, list: string
+
+  # get the list of tags as a string; boy, i love strings
+  if tags != "":
+    list = tags
+  else:
+    let
+      tagList = fetchTagList()
+    if tagList.isNone:
+      error &"unable to retrieve tags"
+      return
+    list = tagList.get
+
+  let
+    veeish = allTagsAppearToStartWithV(list)
+    lastTag = last.taggedAs(list)
+
+  # first, see what the last version was tagged as
+  if lastTag.isSome:
+    if lastTag.get.toLowerAscii.startsWith("v"):
+      # if it starts with `v`, then use `v` similarly
+      tag = lastTag.get.pluckVAndDot & $next
+    elif v:
+      # it didn't start with `v`, but the user wants `v`
+      tag = "v" & $next
+    else:
+      # it didn't start with `v`, so neither should this tag
+      tag = $next
+  # otherwise, see if all the prior tags use `v`
+  elif veeish:
+    # if all the tags start with `v`, it's a safe bet that we want `v`
+    # pick the last tag and match its `v` syntax
+    tag = lastTagInTheList(list).pluckVAndDot & $next
+  # no history to speak of, but the user asked for `v`; give them `v`
+  elif v:
+    tag = "v" & $next
+  # no history, didn't ask for `v`, so please just don't use `v`!
+  else:
+    tag = $next
+  result = tag.some
+  debug &"composed the tag `{result.get}`"
+
 proc bump*(minor = false; major = false; patch = true; release = false;
           dry_run = false; folder = ""; nimble = ""; log_level = logLevel;
           commit = false; v = false; message: seq[string]): int =
@@ -224,6 +310,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   var
     target: Target
     next: Version
+    last: Option[Version]
 
   # user's choice, our default
   setLogFilter(log_level)
@@ -268,8 +355,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
         continue
 
       # parse the current version number
-      let
-        last = line.parseVersion
+      last = line.parseVersion
       if last.isNone:
         crash &"unable to parse version from `{line}`"
       else:
@@ -291,24 +377,13 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   debug "changing directory to", target.repo
   setCurrentDir(target.repo)
 
-  # invent a tag and see if we should add a `v` prefix
-  var tag = $next
-  block veeville:
-    if not v:
-      let veeish = tagsAppearToStartWithV()
-      if veeish.isNone:
-        # like the sign says,
-        warn "i can't tell if you want a v in front of your tags;"
-        warn "some strange folks tag version `1.0.0` as `v1.0.0`."
-        warn "i'll wait 10 seconds for you to interrupt, but after"
-        warn "that, i'm gonna go ahead and assume you don't want `v`!"
-        warn ""
-        warn "(use the --v option to force a `v` on your tags)"
-        sleep(10 * 1000)
-        break veeville
-      elif not veeish.get:
-        break veeville
-    tag = "v" & tag
+  # compose a new tag
+  let
+    composed = composeTag(last.get, next, v = v)
+  if composed.isNone:
+    crash "i can't safely guess at enabling `v`; try a manual tag first?"
+  let
+    tag = composed.get
 
   # make a git commit message
   var msg = tag
@@ -342,7 +417,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     if message.len > 0:
       msg = message.join(" ")
 
-    # tag the commit with the new version
+    # tag the commit with the new version and message
     if not run("git", "tag", "-a", "-m", msg, tag):
       break
 
