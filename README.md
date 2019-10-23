@@ -78,6 +78,14 @@ $ bump --v my first tag is a weird one
 🍻bumped
 ```
 
+If your last version had a `[vV]\.?` prefix, your next one will, too.
+```
+$ git tag -m 'a very bad idea' -a V.1.0.2
+$ bump going from bad to worse
+🎉V.1.0.3: going from bad to worse
+🍻bumped
+```
+
 You can commit the entire repository at once to reduce gratuitous commits.
 ```
 $ bump --commit quick fix for simple buglet
