@@ -62,7 +62,7 @@ $ bump fixed another bug!
 🍻bumped
 ```
 
-If you use a `v` prefix for your tags, bump will add one, too.
+If you already use a `v` prefix for your tags, bump will add one, too.
 ```
 $ bump strange tag ahead
 🎉v2.1.2: strange tag ahead
