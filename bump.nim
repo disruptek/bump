@@ -397,6 +397,16 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     debug "dry run and done"
     return
 
+  # if we're not on the master branch, let's just bail for now
+  let
+    branch = appearsToBeMasterBranch()
+  if branch.isNone:
+    crash "uh oh; i cannot tell if i'm on the master branch"
+  elif not branch.get:
+    crash "i'm afraid to modify any branch that isn't master"
+  else:
+    debug "good; this appears to be the master branch"
+
   # copy the new .nimble over the old one
   try:
     debug &"copying {temp} over", target
