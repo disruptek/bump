@@ -117,29 +117,63 @@ proc withCrazySpaces(version: Version; line = ""): string =
     return
   result = &"""version = "{version}""""
 
-proc run*(exe: string; args: varargs[string, `$`]): bool =
+proc capture*(exe: string; args: seq[string]): tuple[output: string; ok: bool] =
   ## find and run a given executable with the given arguments;
-  ## the result is true if it seemed to work
-  let
-    path = findExe(exe)
-  if path == "":
-    warn &"unable to find executable `{exe}` in path"
-    return false
-
+  ## the result includes stdout and a true value if it seemed to work
   var
-    process: Process
-    arguments: seq[string]
-  for n in args:
-    arguments.add n
+    command = findExe(exe)
+  if command == "":
+    result = (output: &"unable to find executable `{exe}` in path", ok: false)
+    warn result.output
+    return
+
+  # we apparently need to escape arguments when using this subprocess form
+  command &= " " & quoteShellCommand(args)
+  debug command  # let's take a look at those juicy escape sequences
+
+  # run it and get the output to construct our return value
+  let (output, exit) = execCmdEx(command, {poEvalCommand, poDaemon})
+  result = (output: output, ok: exit == 0)
+
+  # provide a simplified summary at appropriate logging levels
   let
-    ran = exe & " " & arguments.join(" ")
-  debug path, arguments.join(" ")
-  process = path.startProcess(args = arguments, options = {})
-  result = process.waitForExit == 0
-  if result:
+    ran = exe & " " & args.join(" ")
+  if result.ok:
     info ran
   else:
     notice ran
+
+proc run*(exe: string; args: varargs[string]): bool =
+  ## find and run a given executable with the given arguments;
+  ## the result is true if it seemed to work
+  var
+    arguments: seq[string]
+  for n in args:
+    arguments.add n
+  result = capture(exe, arguments).ok
+
+proc tagsAppearToStartWithV(): Option[bool] =
+  ## try to determine if this project's git tags start with a `v`
+  let
+    caught = capture("git", @["tag", "--list"])
+  if not caught.ok:
+    return
+  var
+    splat = splitLines(caught.output, keepEol = false)
+  # get rid of any empty trailing output
+  while splat.len > 0 and splat[^1].strip == "":
+    discard splat.pop
+  if splat.len == 0:
+    # if there's nothing left, let's assume there are no versions
+    debug "no tags in `git tag --list`?  that makes it easy."
+    result = false.some
+  else:
+    # we have a tag that, if lexical sort is to be believed, may
+    # represent the latest tag added.  if it looks like it starts with
+    # `v` and may be part of a version string, then yield truthiness!
+    debug "the last tag in our `git tag --list` is", splat[^1]
+    result = splat[^1].contains(re"^[vV]\.?\d").some
+  debug &"my guess as to whether we use `v` tags: {result.get}"
 
 proc bump*(minor = false; major = false; patch = true; release = false;
           dry_run = false; folder = "."; nimble = ""; log_level = logLevel;
@@ -204,10 +238,26 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       # make a subtle edit to the version string and write it out
       writer.writeLine next.withCrazySpaces(line)
 
-  # make a git commit message
+  # invent a tag and see if we should add a `v` prefix
   var tag = $next
-  if v:
+  block veeville:
+    if not v:
+      let veeish = tagsAppearToStartWithV()
+      if veeish.isNone:
+        # like the sign says,
+        warn "i can't tell if you want a v in front of your tags;"
+        warn "some strange folks tag version `1.0.0` as `v1.0.0`."
+        warn "i'll wait 10 seconds for you to interrupt, but after"
+        warn "that, i'm gonna go ahead and assume you don't want `v`!"
+        warn ""
+        warn "(use the --v option to force a `v` on your tags)"
+        sleep(10 * 1000)
+        break veeville
+      elif not veeish.get:
+        break veeville
     tag = "v" & tag
+
+  # make a git commit message
   var msg = tag
   if message.len > 0:
     msg &= ": " & message.join(" ")
@@ -232,7 +282,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   setCurrentDir(target.repo)
 
   # try to do some git operations
-  while true:
+  block nimgitsfu:
     # commit just the .nimble file, or the whole repository
     var
       committee = if commit: target.repo else: $target
@@ -262,7 +312,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
 
     # celebrate
     fatal "🍻bumped"
-    return
+    return 0
 
   # hang our head in shame
   fatal "🐼nimgitsfu fail"
