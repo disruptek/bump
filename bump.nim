@@ -153,6 +153,13 @@ proc run*(exe: string; args: varargs[string]): bool =
     arguments.add n
   result = capture(exe, arguments).ok
 
+proc appearsToBeMasterBranch(): Option[bool] =
+  ## try to determine if we're on the `master` branch
+  let
+    caught = capture("git", @["branch", "--show-current"])
+  if not caught.ok:
+    return
+  result = caught.output.contains(re"^\s*master\s*$").some
 proc tagsAppearToStartWithV(): Option[bool] =
   ## try to determine if this project's git tags start with a `v`
   let
