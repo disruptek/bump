@@ -62,6 +62,7 @@ proc `$`*(ver: Version): string =
 proc findTarget*(dir: string; target = ""): Option[Target] =
   ## locate one, and only one, nimble file to work upon;
   ## dir is where to look, target is a .nimble or package name
+  debug &"find target input `{dir}` and `{target}`"
   block found:
     for component, filename in walkDir(dir):
       if not filename.endsWith(".nimble") or component != pcFile:
@@ -175,8 +176,42 @@ proc tagsAppearToStartWithV(): Option[bool] =
     result = splat[^1].contains(re"^[vV]\.?\d").some
   debug &"my guess as to whether we use `v` tags: {result.get}"
 
+proc shouldSearch(folder: string; nimble: string):
+  Option[tuple[dir: string; file: string]] =
+  ## given a folder and nimble file (which may be empty), find the most useful
+  ## directory and target filename to search for. this is a little convoluted
+  ## because we're trying to perform the function of three options in one proc.
+  var
+    dir, file: string
+  if folder == "":
+    if nimble != "":
+      # there's no folder specified, so if a nimble was provided,
+      # split it into a directory and file for the purposes of search
+      (dir, file) = splitPath(nimble)
+    # if the directory portion is empty, search the current directory
+    if dir == "":
+      dir = "."
+  else:
+    dir = folder
+    file = nimble
+  # by now, we at least know where we're gonna be looking
+  if not existsDir(dir):
+    warn &"`{dir}` is not a directory"
+    return
+  # try to look for a .nimble file just in case
+  # we can identify it quickly and easily here
+  while file != "" and not existsFile(dir / file):
+    if file.endsWith(".nimble"):
+      # a file was specified but we cannot find it, even given
+      # a reasonable directory and the addition of .nimble
+      warn &"`{dir}/{file}` does not exist"
+      return
+    file &= ".nimble"
+  debug &"should search `{dir}` for `{file}`"
+  result = (dir: dir, file: file).some
+
 proc bump*(minor = false; major = false; patch = true; release = false;
-          dry_run = false; folder = "."; nimble = ""; log_level = logLevel;
+          dry_run = false; folder = ""; nimble = ""; log_level = logLevel;
           commit = false; v = false; message: seq[string]): int =
   ## the entry point from the cli
   var
@@ -186,12 +221,16 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   # user's choice, our default
   setLogFilter(log_level)
 
+  # take a stab at whether our .nimble file search might be illegitimate
+  let search = shouldSearch(folder, nimble)
+  if search.isNone:
+    # uh oh; it's not even worth attempting a search
+    crash &"nothing to bump"
   # find the targeted .nimble file
-  debug &"search `{folder}` for `{nimble}`"
   let
-    found = findTarget(folder, target = nimble)
+    found = findTarget(search.get.dir, target = search.get.file)
   if found.isNone:
-    crash &"couldn't pick a .nimble from `{folder}/{nimble}`"
+    crash &"couldn't pick a .nimble from `{search.get.dir}/{search.get.file}`"
   else:
     debug "found", found.get
     target = found.get
