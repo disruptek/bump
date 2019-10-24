@@ -6,6 +6,9 @@ It just **bumps** the value of the `version` in your `.nimble` file, commits it,
 
 For an explanation of the "social contract" that is semantic versioning, see https://semver.org/
 
+**Note:** I only test bump on Linux, but I'm not aware of any platform-specific
+code in the tool.
+
 ## Usage
 
 By default, bump increments the patch number.
