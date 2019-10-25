@@ -221,7 +221,7 @@ proc shouldSearch(folder: string; nimble: string):
   Option[tuple[dir: string; file: string]] =
   ## given a folder and nimble file (which may be empty), find the most useful
   ## directory and target filename to search for. this is a little convoluted
-  ## because we're trying to perform the function of three options in one proc.
+  ## because we're trying to replace the function of three options in one proc.
   var
     dir, file: string
   if folder == "":
@@ -231,7 +231,14 @@ proc shouldSearch(folder: string; nimble: string):
       (dir, file) = splitPath(nimble)
     # if the directory portion is empty, search the current directory
     if dir == "":
-      dir = "."
+      dir =
+        # the current direction is known by many names...
+        when defined(macos):
+          ":"
+        elif defined(genode):
+          "/"
+        else:
+          "."
   else:
     dir = folder
     file = nimble
