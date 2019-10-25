@@ -155,11 +155,15 @@ proc run*(exe: string; args: varargs[string]): bool =
 
 proc appearsToBeMasterBranch*(): Option[bool] =
   ## try to determine if we're on the `master` branch
-  let
+  var
     caught = capture("git", @["branch", "--show-current"])
   if not caught.ok:
-    return
-  result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^master$").some
+    caught = capture("git", @["branch"])
+    if not caught.ok:
+      return
+    result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^\*\smaster$").some
+  else:
+    result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^master$").some
   debug &"appears to be master branch? {result.get}"
 
 proc fetchTagList*(): Option[string] =
