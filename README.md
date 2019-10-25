@@ -7,7 +7,12 @@ It just **bumps** the value of the `version` in your `.nimble` file, commits it,
 For an explanation of the "social contract" that is semantic versioning, see https://semver.org/
 
 **Note:** I only test bump on Linux against `git v2.23.0`, but it seems to work against `git v2.17.0`.  Platform-specific code in the tool:
-1. we identify your current working directory differently on `macos` and `genode`.
+
+1. we identify your current working directory differently on `macos` and `genode`, and perhaps some day, other platforms as well.
+
+1. by the same token (well, not the **same** token, but...) if Nim ever invents a new `ExtSep` for your platform (ie. the character that separates filename from its extension), you can rebuild bump to use that new separator.
+
+If you had to read that section carefully, please file a bug report with your vendor.
 
 ## Usage
 

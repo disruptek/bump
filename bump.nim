@@ -48,6 +48,8 @@ method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
   except:
     discard
 
+template dotNimble(): string = &"{ExtSep}nimble"
+
 template crash(why: string) =
   ## a good way to exit bump()
   error why
@@ -65,10 +67,10 @@ proc findTarget*(dir: string; target = ""): Option[Target] =
   debug &"find target input `{dir}` and `{target}`"
   block found:
     for component, filename in walkDir(dir):
-      if not filename.endsWith(".nimble") or component != pcFile:
+      if not filename.endsWith(dotNimble) or component != pcFile:
         continue
       if target != "":
-        if filename.extractFilename notin [target, target & ".nimble"]:
+        if filename.extractFilename notin [target, target & dotNimble]:
           continue
       if result.isSome:
         warn &"found `{result.get}` and `{filename}` in `{dir}`"
@@ -242,12 +244,12 @@ proc shouldSearch(folder: string; nimble: string):
   # try to look for a .nimble file just in case
   # we can identify it quickly and easily here
   while file != "" and not existsFile(dir / file):
-    if file.endsWith(".nimble"):
+    if file.endsWith(dotNimble):
       # a file was specified but we cannot find it, even given
       # a reasonable directory and the addition of .nimble
       warn &"`{dir}/{file}` does not exist"
       return
-    file &= ".nimble"
+    file &= dotNimble
   debug &"should search `{dir}` for `{file}`"
   result = (dir: dir, file: file).some
 
@@ -331,14 +333,14 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   let
     found = findTarget(search.get.dir, target = search.get.file)
   if found.isNone:
-    crash &"couldn't pick a .nimble from `{search.get.dir}/{search.get.file}`"
+    crash &"couldn't pick a {dotNimble} from `{search.get.dir}/{search.get.file}`"
   else:
     debug "found", found.get
     target = found.get
 
   # make a temp file in an appropriate spot, with a significant name
   let
-    temp = createTemporaryFile(target.package, ".nimble")
+    temp = createTemporaryFile(target.package, dotNimble)
   debug &"writing {temp}"
   # but remember to remove the temp file later
   defer:
