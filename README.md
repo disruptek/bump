@@ -9,6 +9,8 @@ For an explanation of the "social contract" that is semantic versioning, see htt
 **Note:** I only test bump on Linux, but I'm not aware of any platform-specific
 code in the tool.
 
+**Note:** I only test bump on `git v2.23.0` and bump does not work on `git v2.17.0` due to missing `git branch --show-current`.  This will be fixed presently.
+
 ## Usage
 
 By default, bump increments the patch number.
