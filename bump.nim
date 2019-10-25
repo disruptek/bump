@@ -231,14 +231,7 @@ proc shouldSearch(folder: string; nimble: string):
       (dir, file) = splitPath(nimble)
     # if the directory portion is empty, search the current directory
     if dir == "":
-      dir =
-        # the current direction is known by many names...
-        when defined(macos):
-          ":"
-        elif defined(genode):
-          "/"
-        else:
-          "."
+      dir = $CurDir  # should be correct regardless of os
   else:
     dir = folder
     file = nimble
