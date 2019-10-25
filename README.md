@@ -132,5 +132,8 @@ Options(opt-arg sep :|=|spc):
   -v, --v            bool    false     set v
 ```
 
+## Library Use
+There are some procedures exported for your benefit; see [the documentation for the module as generated directly from the source](https://disruptek.github.io/bump/bump.html).
+
 ## License
 MIT
