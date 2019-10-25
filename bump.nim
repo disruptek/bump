@@ -48,7 +48,8 @@ method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
   except:
     discard
 
-template dotNimble(): string = &"{ExtSep}nimble"
+const
+  dotNimble = &"{ExtSep}nimble"
 
 template crash(why: string) =
   ## a good way to exit bump()
