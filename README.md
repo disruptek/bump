@@ -6,10 +6,9 @@ It just **bumps** the value of the `version` in your `.nimble` file, commits it,
 
 For an explanation of the "social contract" that is semantic versioning, see https://semver.org/
 
-**Note:** I only test bump on Linux, but I'm not aware of any platform-specific
-code in the tool.
-
-**Note:** I only test bump on `git v2.23.0` and bump does not work on `git v2.17.0` due to missing `git branch --show-current`.  This will be fixed presently.
+**Note:** I only test bump on Linux against `git v2.23.0`, but I'm not aware
+of any platform-specific code in the tool and bump seems to work against `git
+v2.17.0`.
 
 ## Usage
 
