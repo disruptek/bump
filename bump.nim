@@ -467,4 +467,18 @@ when isMainModule:
                                useStderr = true, fmtStr = "")
     logger = CuteLogger(forward: console)
   addHandler(logger)
-  dispatch bump
+  dispatch bump, cmdName = "bump",
+    doc = "increment the version of a nimble package, " &
+          "tag it, and push it via git",
+    help = {
+      "patch": "increment the patch version field",
+      "minor": "increment the minor version field",
+      "major": "increment the major version field",
+      "dry-run": "just report the projected version",
+      "commit": "also commit any other unstaged changes",
+      "v": "prefix the version tag with an ugly `v`",
+      "nimble": "specify the nimble file to modify",
+      "folder": "specify the location of the nimble file",
+      "release": "also use `hub` to issue a GitHub release",
+      "log-level": "specify Nim logging level",
+    }
