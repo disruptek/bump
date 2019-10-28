@@ -844,6 +844,8 @@ function main() {
     title="findTarget(dir: string; target = &quot;&quot;): Option[Target]"><wbr />find<wbr />Target<span class="attachedType">Target</span></a></li>
   <li><a class="reference" href="#createTemporaryFile%2Cstring%2Cstring"
     title="createTemporaryFile(prefix: string; suffix: string): string"><wbr />create<wbr />Temporary<wbr />File<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#isValid%2CVersion"
+    title="isValid(ver: Version): bool"><wbr />is<wbr />Valid<span class="attachedType">Version</span></a></li>
   <li><a class="reference" href="#parseVersion%2Cstring"
     title="parseVersion(line: string): Option[Version]"><wbr />parse<wbr />Version<span class="attachedType">Version</span></a></li>
   <li><a class="reference" href="#bumpVersion%2CVersion"
@@ -866,9 +868,10 @@ function main() {
     title="allTagsAppearToStartWithV(tagList: string): bool"><wbr />all<wbr />Tags<wbr />Appear<wbr />To<wbr />Start<wbr />With<wbr />V<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#composeTag%2CVersion%2CVersion%2Cstring"
     title="composeTag(last: Version; next: Version; v = false; tags = &quot;&quot;): Option[string]"><wbr />compose<wbr />Tag<span class="attachedType">Version</span></a></li>
-  <li><a class="reference" href="#bump%2Cstring%2Cstring%2Cseq%5BT%5D%5Bstring%5D"
+  <li><a class="reference" href="#bump%2Cstring%2Cstring%2Cstring%2Cseq%5BT%5D%5Bstring%5D"
     title="bump(minor = false; major = false; patch = true; release = false; dry_run = false; folder = &quot;&quot;;
-     nimble = &quot;&quot;; log_level = logLevel; commit = false; v = false; message: seq[string]): int"><wbr />bump<span class="attachedType"></span></a></li>
+     nimble = &quot;&quot;; log_level = logLevel; commit = false; v = false; manual = &quot;&quot;;
+     message: seq[string]): int"><wbr />bump<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -931,6 +934,13 @@ locate one, and only one, nimble file to work upon; dir is where to look, target
 <dd>
 
 it should create the file, but so far, it doesn't
+
+</dd>
+<a id="isValid,Version"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#isValid%2CVersion"><span class="Identifier">isValid</span></a><span class="Other">(</span><span class="Identifier">ver</span><span class="Other">:</span> <a href="bump.html#Version"><span class="Identifier">Version</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+true if the version seems legit
 
 </dd>
 <a id="parseVersion,string"></a>
@@ -1036,15 +1046,15 @@ try to determine if all of this project's tags start with a <tt class="docutils 
 invent a tag given last and next version, magically adding any needed <tt class="docutils literal"><span class="pre">v</span></tt> prefix.  fetches tags if a tag list isn't supplied.
 
 </dd>
-<a id="bump,string,string,seq[T][string]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#bump%2Cstring%2Cstring%2Cseq%5BT%5D%5Bstring%5D"><span class="Identifier">bump</span></a><span class="Other">(</span><span class="Identifier">minor</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">major</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">patch</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span> <span class="Identifier">release</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">dry_run</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
+<a id="bump,string,string,string,seq[T][string]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#bump%2Cstring%2Cstring%2Cstring%2Cseq%5BT%5D%5Bstring%5D"><span class="Identifier">bump</span></a><span class="Other">(</span><span class="Identifier">minor</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">major</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">patch</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span> <span class="Identifier">release</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">dry_run</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
          <span class="Identifier">folder</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">nimble</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">log_level</span> <span class="Other">=</span> <span class="Identifier">logLevel</span><span class="Other">;</span> <span class="Identifier">commit</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span> <span class="Identifier">v</span> <span class="Other">=</span> <span class="Identifier">false</span><span class="Other">;</span>
-         <span class="Identifier">message</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span>
-    <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">FieldError</span><span class="Other">,</span> <span class="Identifier">AccessViolationError</span><span class="Other">,</span> <span class="Identifier">RegexInternalError</span><span class="Other">,</span>
-    <span class="Identifier">InvalidUnicodeError</span><span class="Other">,</span> <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">SyntaxError</span><span class="Other">,</span> <span class="Identifier">StudyError</span><span class="Other">,</span> <span class="Identifier">IndexError</span><span class="Other">,</span> <span class="Identifier">Defect</span><span class="Other">,</span>
-    <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
-                                <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span> <span class="Identifier">WriteIOEffect</span><span class="Other">,</span>
-                                <span class="Identifier">ExecIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+         <span class="Identifier">manual</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">message</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">int</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">FieldError</span><span class="Other">,</span>
+    <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">AccessViolationError</span><span class="Other">,</span> <span class="Identifier">RegexInternalError</span><span class="Other">,</span> <span class="Identifier">InvalidUnicodeError</span><span class="Other">,</span>
+    <span class="Identifier">KeyError</span><span class="Other">,</span> <span class="Identifier">SyntaxError</span><span class="Other">,</span> <span class="Identifier">StudyError</span><span class="Other">,</span> <span class="Identifier">IndexError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span>
+    <span class="Identifier">Defect</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span>
+                                       <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">WriteDirEffect</span><span class="Other">,</span>
+                                       <span class="Identifier">WriteIOEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 the entry point from the cli
@@ -1060,7 +1070,7 @@ the entry point from the cli
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small>Made with Nim. Generated: 2019-10-25 19:50:24 UTC</small>
+        <small>Made with Nim. Generated: 2019-10-28 20:30:51 UTC</small>
       </div>
     </div>
   </div>

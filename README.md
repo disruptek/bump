@@ -70,6 +70,13 @@ $ bump fixed another bug!
 🍻bumped
 ```
 
+You can specify the next version manually if necessary.
+```
+$ bump --manual 3.3.1 track wrapper version from upstream lib
+🎉3.3.1: track wrapper version from upstream lib
+🍻bumped
+```
+
 If you already use a `v` prefix for your tags, bump will add one, too.
 ```
 $ bump strange tag ahead
@@ -133,6 +140,7 @@ Options(opt-arg sep :|=|spc):
   -l=, --log-level=  Level   lvlInfo  specify Nim logging level
   -c, --commit       bool    false    also commit any other unstaged changes
   -v, --v            bool    false    prefix the version tag with an ugly `v`
+  --manual=          string  ""       manually set the new version to #.#.#
 ```
 
 ## Library Use

@@ -85,3 +85,14 @@ suite "bump":
     check tagv456.get == "v.4.5.6"
     check tag457.get == "4.5.7"
     check tagv155.get == "V1.5.5"
+
+  test "version validity checks out":
+    check (0, 0, 0).isValid == false
+    check (0, 0, 1).isValid == true
+
+  test "strange use-supplied versions do not parse":
+    check parseVersion("""version = "-1.2.3"""").isNone
+    check parseVersion("""version = "12.3"""").isNone
+    check parseVersion("""version = "123"""").isNone
+    check parseVersion("""version = "steve"""").isNone
+    check parseVersion("""version = "v0.3.0"""").isNone

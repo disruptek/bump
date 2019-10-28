@@ -87,6 +87,10 @@ proc createTemporaryFile*(prefix: string; suffix: string): string =
   let temp = getTempDir()
   result = temp / "bump-" & $getCurrentProcessId() & "-" & prefix & suffix
 
+proc isValid*(ver: Version): bool =
+  ## true if the version seems legit
+  result = ver.major > 0 or ver.minor > 0 or ver.patch > 0
+
 proc parseVersion*(line: string): Option[Version] =
   ## parse a version specifier line from the .nimble file
   let
@@ -312,7 +316,7 @@ proc composeTag*(last: Version; next: Version; v = false; tags = ""):
 
 proc bump*(minor = false; major = false; patch = true; release = false;
           dry_run = false; folder = ""; nimble = ""; log_level = logLevel;
-          commit = false; v = false; message: seq[string]): int =
+          commit = false; v = false; manual = ""; message: seq[string]): int =
   ## the entry point from the cli
   var
     target: Target
@@ -324,6 +328,15 @@ proc bump*(minor = false; major = false; patch = true; release = false;
 
   if folder != "":
     warn "the --folder option is deprecated; please use --nimble instead"
+
+  # parse and assign a version number manually provided by the user
+  if manual != "":
+    # use our existing parser for consistency
+    let future = parseVersion(&"""version = "{manual}"""")
+    if future.isNone or not future.get.isValid:
+      crash &"unable to parse supplied version `{manual}`"
+    next = future.get
+    debug &"user-specified next version as `{next}`"
 
   # take a stab at whether our .nimble file search might be illegitimate
   let search = shouldSearch(folder, nimble)
@@ -368,14 +381,15 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       else:
         debug "current version is", last.get
 
-      # bump the version number
-      let
-        bumped = last.get.bumpVersion(major, minor, patch)
-      if bumped.isNone:
-        crash "version unchanged; specify major, minor, or patch"
-      else:
-        debug "next version is", bumped.get
-      next = bumped.get
+      # if we haven't set the new version yet, bump the version number
+      if not next.isValid:
+        let
+          bumped = last.get.bumpVersion(major, minor, patch)
+        if bumped.isNone:
+          crash "version unchanged; specify major, minor, or patch"
+        else:
+          debug "next version is", bumped.get
+        next = bumped.get
 
       # make a subtle edit to the version string and write it out
       writer.writeLine next.withCrazySpaces(line)
@@ -481,4 +495,5 @@ when isMainModule:
       "folder": "specify the location of the nimble file",
       "release": "also use `hub` to issue a GitHub release",
       "log-level": "specify Nim logging level",
+      "manual": "manually set the new version to #.#.#",
     }
