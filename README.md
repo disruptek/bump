@@ -72,8 +72,8 @@ $ bump fixed another bug!
 
 You can specify the next version manually if necessary.
 ```
-$ bump --manual 3.3.1 track wrapper version from upstream lib
-🎉3.3.1: track wrapper version from upstream lib
+$ bump --manual 3.3.1 wrapper tracks version from upstream lib
+🎉3.3.1: wrapper tracks version from upstream lib
 🍻bumped
 ```
 
