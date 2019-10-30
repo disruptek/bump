@@ -394,6 +394,14 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       # make a subtle edit to the version string and write it out
       writer.writeLine next.withCrazySpaces(line)
 
+  # for sanity, make sure we were able to parse the previous version
+  if last.isNone:
+    crash &"couldn't find a version statement in `{target}`"
+
+  # and check again to be certain that our next version is valid
+  if not next.isValid:
+    crash &"unable to calculate the next version; `{next}` invalid"
+
   # move to the repo so we can do git operations
   debug "changing directory to", target.repo
   setCurrentDir(target.repo)
