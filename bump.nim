@@ -6,6 +6,8 @@ import strformat
 import nre
 import logging
 
+from macros import nil
+
 
 type
   Version* = tuple
@@ -101,16 +103,26 @@ proc isValid*(ver: Version): bool =
   ## true if the version seems legit
   result = ver.major > 0 or ver.minor > 0 or ver.patch > 0
 
-proc parseVersion*(line: string): Option[Version] =
-  ## parse a version specifier line from the .nimble file
-  let
-    verex = line.match re(r"""^version\s*=\s*"(\d+).(\d+).(\d+)"""")
-  if not verex.isSome:
-    return
-  let cap = verex.get.captures.toSeq
-  result = (major: cap[0].get.parseInt,
-            minor: cap[1].get.parseInt,
-            patch: cap[2].get.parseInt).some
+proc parseVersion*(nimble: string): Option[Version] =
+  ## try to parse a version from any line in a .nimble;
+  ## safe to use at compile-time
+  for line in nimble.splitLines:
+    if not line.startsWith("version"):
+      continue
+    let
+      fields = line.split('=')
+    if fields.len != 2:
+      continue
+    let
+      dotted = fields[1].replace("\"").strip.split('.')
+    if dotted.len != 3:
+      continue
+    try:
+      result = (major: dotted[0].parseInt,
+                minor: dotted[1].parseInt,
+                patch: dotted[2].parseInt).some
+    except ValueError:
+      discard
 
 proc bumpVersion*(ver: Version; major, minor, patch = false): Option[Version] =
   ## increment the version by the specified metric
@@ -491,6 +503,43 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   fatal "🐼nimgitsfu fail"
   return 1
 
+when defined(NimSupportsGlobAtCompileTime):
+  proc isNamedLikeDotNimble(dir: string; file: string): bool =
+    ## true if it the .nimble filename (minus ext) matches the directory
+    if dir == "" or file == "":
+      return
+    if not file.endsWith(dotNimble):
+      return
+    result = dir.lastPathPart == file.changeFileExt("")
+
+proc projectVersion*(hint = ""): Option[Version] {.compileTime.} =
+  ## try to get the version from the current (compile-time) project
+  let
+    path = macros.getProjectPath()
+    splat = path.splitFile
+  var
+    nimble: string
+
+  if hint != "":
+    nimble = staticRead path / hint & dotNimble
+  elif fileExists(path / splat.name & dotNimble):
+    nimble = staticRead path / splat.name & dotNimble
+  else:
+    when defined(NimSupportsGlobAtCompileTime):
+      for file in walkFiles(path / "*" & dotNimble):
+        if nimble != "" and not path.isNamedLikeDotNimble(file):
+          macros.error &"{file} is 2nd {dotNimble} in {path}!"
+        nimble = staticRead path / file
+        if nimble == "":
+          # we won't know what to do if we find a second .nimble
+          # and yet out nimble contents are empty; so error out
+          macros.error &"{file} is empty; what version is this?!"
+    else:
+      macros.error &"provide the name of your project, minus {dotNimble}"
+  if nimble == "":
+    macros.error &"missing/empty {dotNimble}; what version is this?!"
+  result = parseVersion(nimble)
+
 when isMainModule:
   import cligen
 
@@ -499,7 +548,16 @@ when isMainModule:
                                useStderr = true, fmtStr = "")
     logger = CuteLogger(forward: console)
   addHandler(logger)
-  dispatch bump, cmdName = "bump",
+
+  # find the version of bump itself, whatfer --version reasons
+  let
+    version = projectVersion()
+  if version.isSome:
+    clCfg.version = $version.get
+  else:
+    clCfg.version = "(unknown version)"
+
+  dispatchCf bump, cmdName = "bump", cf = clCfg,
     doc = "increment the version of a nimble package, " &
           "tag it, and push it via git",
     help = {
