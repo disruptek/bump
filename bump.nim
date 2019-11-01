@@ -59,7 +59,7 @@ method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
     discard
 
 const
-  dotNimble = &"{ExtSep}nimble"
+  dotNimble = "".addFileExt("nimble")
 
 template crash(why: string) =
   ## a good way to exit bump()
