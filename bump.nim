@@ -8,17 +8,27 @@ import logging
 
 
 type
-  Version* = tuple[major: int; minor: int; patch: int]
-  Target* = tuple[repo: string; package: string; ext: string]
+  Version* = tuple
+    major: int
+    minor: int
+    patch: int
+  Target* = tuple
+    repo: string
+    package: string
+    ext: string
   CuteLogger = ref object of Logger
     forward: Logger
 
-when defined(debug):
-  const logLevel = lvlDebug
-elif defined(release) or defined(danger):
-  const logLevel = lvlNotice
-else:
-  const logLevel = lvlInfo
+const
+  logLevel =
+    when defined(debug):
+      lvlDebug
+    elif defined(release):
+      lvlNotice
+    elif defined(danger):
+      lvlNotice
+    else:
+      lvlInfo
 
 method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
   {.locks: "unknown", raises: [].} =
