@@ -448,7 +448,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
 
   # copy the new .nimble over the old one
   try:
-    debug &"copying {temp} over", target
+    debug &"copying {temp} over {target}"
     copyFile(temp, $target)
   except Exception as e:
     discard e # noqa 😞
