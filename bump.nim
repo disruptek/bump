@@ -14,14 +14,21 @@ type
     major: int
     minor: int
     patch: int
+
   Target* = tuple
     repo: string
     package: string
     ext: string
+
+  SearchResult* = tuple
+    message: string
+    found: Option[Target]
+
   CuteLogger = ref object of Logger
     forward: Logger
 
 const
+  dotNimble = "".addFileExt("nimble")
   logLevel =
     when defined(debug):
       lvlDebug
@@ -60,9 +67,6 @@ method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
   except:
     discard
 
-const
-  dotNimble = "".addFileExt("nimble")
-
 template crash(why: string) =
   ## a good way to exit bump()
   error why
@@ -74,28 +78,79 @@ proc `$`*(target: Target): string =
 proc `$`*(ver: Version): string =
   result = &"{ver.major}.{ver.minor}.{ver.patch}"
 
-proc findTarget*(dir: string; target = ""): Option[Target] =
-  ## locate one, and only one, nimble file to work upon;
-  ## dir is where to look, target is a .nimble or package name
-  debug &"find target input `{dir}` and `{target}`"
-  block found:
-    for component, filename in walkDir(dir):
-      if not filename.endsWith(dotNimble) or component != pcFile:
-        continue
-      if target != "":
-        if filename.extractFilename notin [target, target & dotNimble]:
-          continue
-      if result.isSome:
-        warn &"found `{result.get}` and `{filename}` in `{dir}`"
-        break found
-      let splat = filename.absolutePath.splitFile
-      result = (repo: splat.dir, package: splat.name, ext: splat.ext).some
-    # we set result only once, so this is a some(Target) return
+proc isNamedLikeDotNimble(dir: string; file: string): bool =
+  ## true if it the .nimble filename (minus ext) matches the directory
+  if dir == "" or file == "":
     return
-  result = none(Target)
+  if not file.endsWith(dotNimble):
+    return
+  result = dir.lastPathPart == file.changeFileExt("")
+
+proc findTarget*(dir: string; target = ""): SearchResult =
+  ## locate one, and only one, nimble file to work upon; dir is where
+  ## to start looking, target is a .nimble or package name
+
+  # search the directory for a .nimble file
+  for component, filename in walkDir(dir):
+    if component != pcFile or not filename.endsWith(dotNimble):
+      continue
+    if target != "":
+      if filename.extractFilename notin [target, target & dotNimble]:
+        continue
+
+    # a 2nd .nimble overrides the first if it matches the directory name
+    if result.found.isSome:
+      # if it also isn't clearly the project's .nimble, keep looking
+      if not isNamedLikeDotNimble(dir, filename):
+        result = (message:
+                    &"found `{result.found.get}` and `{filename}` in `{dir}`",
+                  found: none(Target))
+        continue
+
+    # we found a .nimble; let's set our result and keep looking for a 2nd
+    let splat = filename.splitFile
+    result = (message: &"found target in `{dir}` given `{target}`",
+              found: (repo: splat.dir,
+                      package: splat.name, ext: splat.ext).some)
+
+    # this appears to be the best .nimble; let's stop looking here
+    if isNamedLikeDotNimble(dir, filename):
+      break
+
+  # we might be good to go, here
+  if result.found.isSome:
+    return
+
+  # otherwise, maybe we can recurse up the directory tree.
+  # if our dir is `.`, then we might want to shadow it with a
+  # full current dir (if we can do so without using an os call)
+
+  let
+    pwd = os.getEnv("PWD", os.getEnv("CD", ""))
+    dir =
+      if dir == "." and sameFile(dir, pwd):
+        pwd
+      else:
+        dir
+
+  # if we're already at a root, i guess we're done
+  if dir.isRootDir:
+    return (message: "", found: none(Target))
+
+  # else let's see if we have better luck in a parent directory
+  var
+    refined = findTarget(dir.parentDir, target = target)
+
+  # return the refinement if it was successful,
+  if refined.found.isSome:
+    return refined
+
+  # or if the refinement yields a superior error message
+  if refined.message != "" and result.message == "":
+    return refined
 
 proc createTemporaryFile*(prefix: string; suffix: string): string =
-  ## it should create the file, but so far, it doesn't
+  ## it SHOULD create the file, but so far, it only returns the filename
   let temp = getTempDir()
   result = temp / "bump-" & $getCurrentProcessId() & "-" & prefix & suffix
 
@@ -367,12 +422,15 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     crash &"nothing to bump"
   # find the targeted .nimble file
   let
-    found = findTarget(search.get.dir, target = search.get.file)
-  if found.isNone:
+    sought = findTarget(search.get.dir, target = search.get.file)
+  if sought.found.isNone:
+    # emit any available excuse as to why we couldn't find .nimble
+    if sought.message != "":
+      warn sought.message
     crash &"couldn't pick a {dotNimble} from `{search.get.dir}/{search.get.file}`"
   else:
-    debug "found", found.get
-    target = found.get
+    debug sought.message
+    target = sought.found.get
 
   # make a temp file in an appropriate spot, with a significant name
   let
@@ -503,39 +561,16 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   fatal "🐼nimgitsfu fail"
   return 1
 
-when defined(NimSupportsGlobAtCompileTime):
-  proc isNamedLikeDotNimble(dir: string; file: string): bool =
-    ## true if it the .nimble filename (minus ext) matches the directory
-    if dir == "" or file == "":
-      return
-    if not file.endsWith(dotNimble):
-      return
-    result = dir.lastPathPart == file.changeFileExt("")
-
 proc projectVersion*(hint = ""): Option[Version] {.compileTime.} =
   ## try to get the version from the current (compile-time) project
   let
-    path = macros.getProjectPath()
-    splat = path.splitFile
-  var
-    nimble: string
+    target = findTarget(macros.getProjectPath(), hint)
 
-  if hint != "":
-    nimble = staticRead path / hint & dotNimble
-  elif fileExists(path / splat.name & dotNimble):
-    nimble = staticRead path / splat.name & dotNimble
-  else:
-    when defined(NimSupportsGlobAtCompileTime):
-      for file in walkFiles(path / "*" & dotNimble):
-        if nimble != "" and not path.isNamedLikeDotNimble(file):
-          macros.error &"{file} is 2nd {dotNimble} in {path}!"
-        nimble = staticRead path / file
-        if nimble == "":
-          # we won't know what to do if we find a second .nimble
-          # and yet out nimble contents are empty; so error out
-          macros.error &"{file} is empty; what version is this?!"
-    else:
-      macros.error &"provide the name of your project, minus {dotNimble}"
+  if target.found.isNone:
+    macros.warning target.message
+    macros.error &"provide the name of your project, minus {dotNimble}"
+  var
+    nimble = staticRead $target.found.get
   if nimble == "":
     macros.error &"missing/empty {dotNimble}; what version is this?!"
   result = parseVersion(nimble)
@@ -550,7 +585,7 @@ when isMainModule:
   addHandler(logger)
 
   # find the version of bump itself, whatfer --version reasons
-  let
+  const
     version = projectVersion()
   if version.isSome:
     clCfg.version = $version.get
