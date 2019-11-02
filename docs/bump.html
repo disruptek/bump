@@ -830,6 +830,8 @@ function main() {
     title="Version = tuple[major: int, minor: int, patch: int]"><wbr />Version<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#Target"
     title="Target = tuple[repo: string, package: string, ext: string]"><wbr />Target<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#SearchResult"
+    title="SearchResult = tuple[message: string, found: Option[Target]]"><wbr />Search<wbr />Result<span class="attachedType"></span></a></li>
 
   </ul>
 </li>
@@ -841,7 +843,7 @@ function main() {
   <li><a class="reference" href="#%24%2CVersion"
     title="`$`(ver: Version): string"><wbr />`$`<span class="attachedType">Version</span></a></li>
   <li><a class="reference" href="#findTarget%2Cstring%2Cstring"
-    title="findTarget(dir: string; target = &quot;&quot;): Option[Target]"><wbr />find<wbr />Target<span class="attachedType">Target</span></a></li>
+    title="findTarget(dir: string; target = &quot;&quot;): SearchResult"><wbr />find<wbr />Target<span class="attachedType">SearchResult</span></a></li>
   <li><a class="reference" href="#createTemporaryFile%2Cstring%2Cstring"
     title="createTemporaryFile(prefix: string; suffix: string): string"><wbr />create<wbr />Temporary<wbr />File<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#isValid%2CVersion"
@@ -902,6 +904,13 @@ function main() {
 
 
 </dd>
+<a id="SearchResult"></a>
+<dt><pre><a href="bump.html#SearchResult"><span class="Identifier">SearchResult</span></a> <span class="Other">=</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">message</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">found</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="bump.html#Target"><span class="Identifier">Target</span></a><span class="Other">]</span><span class="Other">]</span></pre></dt>
+<dd>
+
+
+
+</dd>
 
 </dl></div>
 <div class="section" id="12">
@@ -922,12 +931,11 @@ function main() {
 
 </dd>
 <a id="findTarget,string,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#findTarget%2Cstring%2Cstring"><span class="Identifier">findTarget</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">target</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="bump.html#Target"><span class="Identifier">Target</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ReadDirEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#findTarget%2Cstring%2Cstring"><span class="Identifier">findTarget</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">target</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="bump.html#SearchResult"><span class="Identifier">SearchResult</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-locate one, and only one, nimble file to work upon; dir is where to look, target is a .nimble or package name
+locate one, and only one, nimble file to work upon; dir is where to start looking, target is a .nimble or package name
 
 </dd>
 <a id="createTemporaryFile,string,string"></a>
@@ -935,7 +943,7 @@ locate one, and only one, nimble file to work upon; dir is where to look, target
     <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-it should create the file, but so far, it doesn't
+it SHOULD create the file, but so far, it only returns the filename
 
 </dd>
 <a id="isValid,Version"></a>
@@ -1060,8 +1068,8 @@ the entry point from the cli
 
 </dd>
 <a id="projectVersion,string"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#projectVersion%2Cstring"><span class="Identifier">projectVersion</span></a><span class="Other">(</span><span class="Identifier">hint</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="bump.html#Version"><span class="Identifier">Version</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">compileTime</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">]</span><span class="Other">,</span>
-    <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dt><pre><span class="Keyword">proc</span> <a href="#projectVersion%2Cstring"><span class="Identifier">projectVersion</span></a><span class="Other">(</span><span class="Identifier">hint</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="bump.html#Version"><span class="Identifier">Version</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">compileTime</span><span class="Other">,</span>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 try to get the version from the current (compile-time) project
@@ -1077,7 +1085,7 @@ try to get the version from the current (compile-time) project
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small>Made with Nim. Generated: 2019-11-01 22:30:00 UTC</small>
+        <small>Made with Nim. Generated: 2019-11-02 20:20:17 UTC</small>
       </div>
     </div>
   </div>
