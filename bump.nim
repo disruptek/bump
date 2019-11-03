@@ -535,7 +535,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   # try to do some git operations
   block nimgitsfu:
     # commit just the .nimble file, or the whole repository
-    var
+    let
       committee = if commit: target.repo else: $target
     if not run("git", "commit", "-m", msg, committee):
       break
