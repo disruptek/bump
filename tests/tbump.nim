@@ -7,14 +7,14 @@ import bump
 suite "bump":
   setup:
     let
-      ver123 {.used.} = (major: 1, minor: 2, patch: 3)
-      ver155 {.used.} = (major: 1, minor: 5, patch: 5)
-      ver170 {.used.} = (major: 1, minor: 7, patch: 0)
-      ver171 {.used.} = (major: 1, minor: 7, patch: 1)
-      ver456 {.used.} = (major: 4, minor: 5, patch: 6)
-      ver457 {.used.} = (major: 4, minor: 5, patch: 7)
-      ver789 {.used.} = (major: 7, minor: 8, patch: 9)
-      ver799 {.used.} = (major: 7, minor: 9, patch: 9)
+      ver123 {.used.} = (major: 1'u, minor: 2'u, patch: 3'u)
+      ver155 {.used.} = (major: 1'u, minor: 5'u, patch: 5'u)
+      ver170 {.used.} = (major: 1'u, minor: 7'u, patch: 0'u)
+      ver171 {.used.} = (major: 1'u, minor: 7'u, patch: 1'u)
+      ver456 {.used.} = (major: 4'u, minor: 5'u, patch: 6'u)
+      ver457 {.used.} = (major: 4'u, minor: 5'u, patch: 7'u)
+      ver789 {.used.} = (major: 7'u, minor: 8'u, patch: 9'u)
+      ver799 {.used.} = (major: 7'u, minor: 9'u, patch: 9'u)
       aList {.used.} = ""
       bList {.used.} = """
         v.1.2.3
@@ -87,10 +87,10 @@ suite "bump":
     check tagv155.get == "V1.5.5"
 
   test "version validity checks out":
-    check (0, 0, 0).isValid == false
-    check (0, 0, 1).isValid == true
+    check (0'u, 0'u, 0'u).isValid == false
+    check (0'u, 0'u, 1'u).isValid == true
 
-  test "strange use-supplied versions do not parse":
+  test "strange user-supplied versions do not parse":
     check parseVersion("""version = "-1.2.3"""").isNone
     check parseVersion("""version = "12.3"""").isNone
     check parseVersion("""version = "123"""").isNone

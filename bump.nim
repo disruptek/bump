@@ -11,9 +11,9 @@ from macros import nil
 
 type
   Version* = tuple
-    major: int
-    minor: int
-    patch: int
+    major: uint
+    minor: uint
+    patch: uint
 
   Target* = tuple
     repo: string
@@ -173,20 +173,20 @@ proc parseVersion*(nimble: string): Option[Version] =
     if dotted.len != 3:
       continue
     try:
-      result = (major: dotted[0].parseInt,
-                minor: dotted[1].parseInt,
-                patch: dotted[2].parseInt).some
+      result = (major: dotted[0].parseUInt,
+                minor: dotted[1].parseUInt,
+                patch: dotted[2].parseUInt).some
     except ValueError:
       discard
 
 proc bumpVersion*(ver: Version; major, minor, patch = false): Option[Version] =
   ## increment the version by the specified metric
   if major:
-    result = (ver.major + 1, 0, 0).some
+    result = (ver.major + 1'u, 0'u, 0'u).some
   elif minor:
-    result = (ver.major, ver.minor + 1, 0).some
+    result = (ver.major, ver.minor + 1'u, 0'u).some
   elif patch:
-    result = (ver.major, ver.minor, ver.patch + 1).some
+    result = (ver.major, ver.minor, ver.patch + 1'u).some
 
 proc withCrazySpaces*(version: Version; line = ""): string =
   ## insert a new version into a line which may have "crazy spaces"
