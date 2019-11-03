@@ -842,6 +842,10 @@ function main() {
     title="`$`(target: Target): string"><wbr />`$`<span class="attachedType">Target</span></a></li>
   <li><a class="reference" href="#%24%2CVersion"
     title="`$`(ver: Version): string"><wbr />`$`<span class="attachedType">Version</span></a></li>
+  <li><a class="reference" href="#relativeParentPath%2Cstring"
+    title="relativeParentPath(dir: string): string"><wbr />relative<wbr />Parent<wbr />Path<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#isFilesystemRoot%2Cstring"
+    title="isFilesystemRoot(dir: string): bool"><wbr />is<wbr />Filesystem<wbr />Root<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#findTarget%2Cstring%2Cstring"
     title="findTarget(dir: string; target = &quot;&quot;): SearchResult"><wbr />find<wbr />Target<span class="attachedType">SearchResult</span></a></li>
   <li><a class="reference" href="#createTemporaryFile%2Cstring%2Cstring"
@@ -930,9 +934,23 @@ function main() {
 
 
 </dd>
+<a id="relativeParentPath,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#relativeParentPath%2Cstring"><span class="Identifier">relativeParentPath</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">string</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+the parent directory as expressed relative to the directory supplied
+
+</dd>
+<a id="isFilesystemRoot,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#isFilesystemRoot%2Cstring"><span class="Identifier">isFilesystemRoot</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+true if there are no higher directories in the fs tree
+
+</dd>
 <a id="findTarget,string,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#findTarget%2Cstring%2Cstring"><span class="Identifier">findTarget</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">target</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="bump.html#SearchResult"><span class="Identifier">SearchResult</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 locate one, and only one, nimble file to work upon; dir is where to start looking, target is a .nimble or package name
@@ -1069,7 +1087,7 @@ the entry point from the cli
 </dd>
 <a id="projectVersion,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#projectVersion%2Cstring"><span class="Identifier">projectVersion</span></a><span class="Other">(</span><span class="Identifier">hint</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="bump.html#Version"><span class="Identifier">Version</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">compileTime</span><span class="Other">,</span>
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 try to get the version from the current (compile-time) project
@@ -1085,7 +1103,7 @@ try to get the version from the current (compile-time) project
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small>Made with Nim. Generated: 2019-11-03 03:35:47 UTC</small>
+        <small>Made with Nim. Generated: 2019-11-03 15:16:57 UTC</small>
       </div>
     </div>
   </div>
