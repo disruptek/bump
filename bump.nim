@@ -78,6 +78,14 @@ proc `$`*(target: Target): string =
 proc `$`*(ver: Version): string =
   result = &"{ver.major}.{ver.minor}.{ver.patch}"
 
+proc relativeParentPath*(dir: string): string =
+  ## the parent directory as expressed relative to the directory supplied
+  result = dir / ParDir
+
+proc isFilesystemRoot*(dir: string): bool =
+  ## true if there are no higher directories in the fs tree
+  result = sameFile(dir, dir.relativeParentPath)
+
 proc isNamedLikeDotNimble(dir: string; file: string): bool =
   ## true if it the .nimble filename (minus ext) matches the directory
   if dir == "" or file == "":
