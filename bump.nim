@@ -204,7 +204,8 @@ proc withCrazySpaces*(version: Version; line = ""): string =
 
 proc capture*(exe: string; args: seq[string]): tuple[output: string; ok: bool] =
   ## find and run a given executable with the given arguments;
-  ## the result includes stdout and a true value if it seemed to work
+  ## the result includes stdout and a true value if it seemed to work;
+  ## else it includes a mixture of stderr and stdout and a falsey `ok`
   var
     command = findExe(exe)
   if command == "":
@@ -217,7 +218,8 @@ proc capture*(exe: string; args: seq[string]): tuple[output: string; ok: bool] =
   debug command  # let's take a look at those juicy escape sequences
 
   # run it and get the output to construct our return value
-  let (output, exit) = execCmdEx(command, {poEvalCommand, poDaemon})
+  let (output, exit) = execCmdEx(command, {poStdErrToStdOut, poDaemon,
+                                           poEvalCommand})
   result = (output: output, ok: exit == 0)
 
   # provide a simplified summary at appropriate logging levels
@@ -235,19 +237,24 @@ proc run*(exe: string; args: varargs[string]): bool =
     arguments: seq[string]
   for n in args:
     arguments.add n
-  result = capture(exe, arguments).ok
+  let
+    caught = capture(exe, arguments)
+  if not caught.ok:
+    notice caught.output
+  result = caught.ok
 
 proc appearsToBeMasterBranch*(): Option[bool] =
   ## try to determine if we're on the `master` branch
   var
     caught = capture("git", @["branch", "--show-current"])
-  if not caught.ok:
+  if caught.ok:
+    result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^master$").some
+  else:
     caught = capture("git", @["branch"])
     if not caught.ok:
+      notice caught.output
       return
     result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^\*\smaster$").some
-  else:
-    result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^master$").some
   debug &"appears to be master branch? {result.get}"
 
 proc fetchTagList*(): Option[string] =
@@ -258,6 +265,7 @@ proc fetchTagList*(): Option[string] =
   if not caught.ok:
     caught = capture("git", @["tag", "--list"])
   if not caught.ok:
+    notice caught.output
     return
   result = caught.output.strip.some
 
