@@ -96,3 +96,9 @@ suite "bump":
     check parseVersion("""version = "123"""").isNone
     check parseVersion("""version = "steve"""").isNone
     check parseVersion("""version = "v0.3.0"""").isNone
+
+  test "find a version at compile-time":
+    const
+      version = projectVersion()
+    check version.isSome
+    check $(version.get) != "0.0.0"
