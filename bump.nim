@@ -94,7 +94,11 @@ proc isNamedLikeDotNimble(dir: string; file: string): bool =
     return
   result = dir.lastPathPart == file.changeFileExt("")
 
-proc findTarget*(dir: string; target = ""): SearchResult =
+proc compileCurrentDir(): string =
+  result = os.getEnv("PWD", os.getEnv("CD", ""))
+
+proc findTargetWith(dir: string; cwd: proc (): string;
+                    target = ""): SearchResult =
   ## locate one, and only one, nimble file to work upon; dir is where
   ## to start looking, target is a .nimble or package name
 
@@ -131,15 +135,9 @@ proc findTarget*(dir: string; target = ""): SearchResult =
 
   # otherwise, maybe we can recurse up the directory tree.
   # if our dir is `.`, then we might want to shadow it with a
-  # full current dir (if we can do so without using an os call)
+  # full current dir using the supplied proc
 
-  let
-    pwd = os.getEnv("PWD", os.getEnv("CD", ""))
-    dir =
-      if dir == "." and sameFile(dir, pwd):
-        pwd
-      else:
-        dir
+  let dir = if dir == ".": cwd() else: dir
 
   # if we're already at a root, i guess we're done
   if dir.isRootDir:
@@ -147,7 +145,7 @@ proc findTarget*(dir: string; target = ""): SearchResult =
 
   # else let's see if we have better luck in a parent directory
   var
-    refined = findTarget(dir.parentDir, target = target)
+    refined = findTargetWith(dir.parentDir, cwd, target = target)
 
   # return the refinement if it was successful,
   if refined.found.isSome:
@@ -156,6 +154,12 @@ proc findTarget*(dir: string; target = ""): SearchResult =
   # or if the refinement yields a superior error message
   if refined.message != "" and result.message == "":
     return refined
+
+proc findTarget*(dir: string; target = ""): SearchResult =
+  ## locate one, and only one, nimble file to work upon; dir is where
+  ## to start looking, target is a .nimble or package name
+
+  result = findTargetWith(dir, getCurrentDir, target = target)
 
 proc createTemporaryFile*(prefix: string; suffix: string): string =
   ## it SHOULD create the file, but so far, it only returns the filename
@@ -580,7 +584,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
 proc projectVersion*(hint = ""): Option[Version] {.compileTime.} =
   ## try to get the version from the current (compile-time) project
   let
-    target = findTarget(macros.getProjectPath(), hint)
+    target = findTargetWith(macros.getProjectPath(), compileCurrentDir, hint)
 
   if target.found.isNone:
     macros.warning target.message

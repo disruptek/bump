@@ -1,3 +1,4 @@
+import os
 import strutils
 import options
 import unittest
@@ -102,3 +103,34 @@ suite "bump":
       version = projectVersion()
     check version.isSome
     check $(version.get) != "0.0.0"
+
+  test "find a nimble file from below":
+    setCurrentDir(parentDir(currentSourcePath()))
+    check fileExists(extractFilename(currentSourcePath()))
+    let
+      version = projectVersion()
+    check version.isSome
+    check $(version.get) != "0.0.0"
+    let
+      bumpy = findTarget(".", target = "bump")
+      easy = findTarget(".", target = "")
+      missing = findTarget("missing", target = "")
+      randoR = findTarget("../tests/rando", target = "red")
+      randoB = findTarget("../tests/rando", target = "blue")
+      randoG = findTarget("../tests/rando", target = "green")
+    for search in [bumpy, easy]:
+      checkpoint search.message
+      check search.found.isSome
+      check search.found.get.repo.dirExists
+      check search.found.get.package == "bump"
+      check search.found.get.ext == ".nimble"
+    for search in [missing, randoG]:
+      checkpoint search.message
+      check search.found.isNone
+    for search in [randoR, randoB]:
+      checkpoint search.message
+      check search.found.isSome
+    check randoR.found.isSome
+    check randoR.found.get.package == "red"
+    check randoB.found.isSome
+    check randoB.found.get.package == "blue"
