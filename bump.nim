@@ -214,10 +214,9 @@ proc withCrazySpaces*(version: Version; line = ""): string =
     return
   result = &"""version = "{version}""""
 
-proc capture*(exe: string; args: seq[string]): tuple[output: string; ok: bool] =
-  ## find and run a given executable with the given arguments;
-  ## the result includes stdout and a true value if it seemed to work;
-  ## else it includes a mixture of stderr and stdout and a falsey `ok`
+proc capture*(exe: string; args: seq[string];
+              options: set[ProcessOption]): tuple[output: string; ok: bool] =
+  ## capture output of a command+args and indicate apparent success
   var
     command = findExe(exe)
   if command == "":
@@ -230,8 +229,7 @@ proc capture*(exe: string; args: seq[string]): tuple[output: string; ok: bool] =
   debug command  # let's take a look at those juicy escape sequences
 
   # run it and get the output to construct our return value
-  let (output, exit) = execCmdEx(command, {poStdErrToStdOut, poDaemon,
-                                           poEvalCommand})
+  let (output, exit) = execCmdEx(command, options)
   result = (output: output, ok: exit == 0)
 
   # provide a simplified summary at appropriate logging levels
@@ -241,6 +239,11 @@ proc capture*(exe: string; args: seq[string]): tuple[output: string; ok: bool] =
     info ran
   else:
     notice ran
+
+proc capture*(exe: string; args: seq[string]): tuple[output: string; ok: bool] =
+  ## find and run a given executable with the given arguments;
+  ## the result includes stdout/stderr and a true value if it seemed to work
+  result = capture(exe, args, {poStdErrToStdOut, poDaemon, poEvalCommand})
 
 proc run*(exe: string; args: varargs[string]): bool =
   ## find and run a given executable with the given arguments;
