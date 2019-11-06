@@ -97,6 +97,10 @@ proc isNamedLikeDotNimble(dir: string; file: string): bool =
 proc compileCurrentDir(): string =
   result = os.getEnv("PWD", os.getEnv("CD", ""))
 
+proc newTarget*(path: string): Target =
+  let splat = path.splitFile
+  result = (repo: splat.dir, package: splat.name, ext: splat.ext)
+
 proc findTargetWith(dir: string; cwd: proc (): string;
                     target = ""): SearchResult =
   ## locate one, and only one, nimble file to work upon; dir is where
@@ -120,10 +124,8 @@ proc findTargetWith(dir: string; cwd: proc (): string;
         continue
 
     # we found a .nimble; let's set our result and keep looking for a 2nd
-    let splat = filename.splitFile
     result = (message: &"found target in `{dir}` given `{target}`",
-              found: (repo: splat.dir,
-                      package: splat.name, ext: splat.ext).some)
+              found: newTarget(filename).some)
 
     # this appears to be the best .nimble; let's stop looking here
     if isNamedLikeDotNimble(dir, filename):
