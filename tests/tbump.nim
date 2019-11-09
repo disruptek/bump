@@ -134,3 +134,11 @@ suite "bump":
     check randoR.found.get.package == "red"
     check randoB.found.isSome
     check randoB.found.get.package == "blue"
+
+  test "version comparison":
+    check ver123 < ver155
+    check ver170 > ver123
+    check ver170 != (1'u, 2'u, 3'u)
+    check ver170 == (1'u, 7'u, 0'u)
+    check ver170 <= (1'u, 7'u, 0'u)
+    check ver170 >= (1'u, 7'u, 0'u)
