@@ -610,7 +610,7 @@ when isMainModule:
   import cligen
 
   let
-    console = newConsoleLogger(levelThreshold = logLevel,
+    console = newConsoleLogger(levelThreshold = lvlAll,
                                useStderr = true, fmtStr = "")
     logger = CuteLogger(forward: console)
   addHandler(logger)
