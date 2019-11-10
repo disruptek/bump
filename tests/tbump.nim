@@ -34,6 +34,7 @@ suite "bump":
         """version="1.2.3"""",
         """version      = "1.2.3"""",
         """version	 			 	= 	 		  "1.2.3"  """,
+        """version = "1.2.3"""",
       ]
 
   test "parse version statement":
