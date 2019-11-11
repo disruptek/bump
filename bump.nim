@@ -29,6 +29,7 @@ type
 
 const
   dotNimble = "".addFileExt("nimble")
+  defaultExts = @["nimble"]
   logLevel =
     when defined(debug):
       lvlDebug
@@ -105,17 +106,36 @@ proc newTarget*(path: string): Target =
   result = (repo: splat.dir, package: splat.name, ext: splat.ext)
 
 proc findTargetWith(dir: string; cwd: proc (): string;
-                    target = ""): SearchResult =
+                    target = ""; extensions = defaultExts): SearchResult =
   ## locate one, and only one, nimble file to work upon; dir is where
   ## to start looking, target is a .nimble or package name
 
+  # viable selections are limited to the target and possible extensions
+  var
+    viable: seq[string]
+    exts: seq[string]
+
+  # an empty extension is acceptable in the extensions argument
+  for extension in extensions.items:
+    # create mypackage.nimble, mypackage.nimble-link
+    viable.add target.addFileExt(extension)
+
+    # create .nimble, .nimble-link
+    exts.add "".addFileExt(extension)
+
   # search the directory for a .nimble file
   for component, filename in walkDir(dir):
-    if component != pcFile or not filename.endsWith(dotNimble):
+    if component notin {pcFile, pcLinkToFile}:
       continue
+    let splat = splitFile(filename)
+
+    # first, look at the whole filename for the purposes of matching
     if target != "":
-      if filename.extractFilename notin [target, target & dotNimble]:
+      if filename.extractFilename notin viable:
         continue
+    # otherwise, fall back to checking for suitable extension
+    elif splat.ext notin exts:
+      continue
 
     # a 2nd .nimble overrides the first if it matches the directory name
     if result.found.isSome:
@@ -163,8 +183,15 @@ proc findTargetWith(dir: string; cwd: proc (): string;
 proc findTarget*(dir: string; target = ""): SearchResult =
   ## locate one, and only one, nimble file to work upon; dir is where
   ## to start looking, target is a .nimble or package name
-
   result = findTargetWith(dir, safeCurrentDir, target = target)
+
+proc findTarget*(dir: string; target = "";
+                 extensions: seq[string]): SearchResult =
+  ## locate one, and only one, nimble file to work upon; dir is where
+  ## to start looking, target is a .nimble or package name,
+  ## extensions list optional extensions (such as "nimble")
+  result = findTargetWith(dir, safeCurrentDir, target = target,
+                          extensions = extensions)
 
 proc createTemporaryFile*(prefix: string; suffix: string): string =
   ## it SHOULD create the file, but so far, it only returns the filename
