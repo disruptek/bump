@@ -94,8 +94,11 @@ proc isNamedLikeDotNimble(dir: string; file: string): bool =
     return
   result = dir.lastPathPart == file.changeFileExt("")
 
-proc compileCurrentDir(): string =
-  result = os.getEnv("PWD", os.getEnv("CD", ""))
+proc safeCurrentDir(): string =
+  when nimvm:
+    result = os.getEnv("PWD", os.getEnv("CD", ""))
+  else:
+    result = getCurrentDir()
 
 proc newTarget*(path: string): Target =
   let splat = path.splitFile
@@ -161,7 +164,7 @@ proc findTarget*(dir: string; target = ""): SearchResult =
   ## locate one, and only one, nimble file to work upon; dir is where
   ## to start looking, target is a .nimble or package name
 
-  result = findTargetWith(dir, getCurrentDir, target = target)
+  result = findTargetWith(dir, safeCurrentDir, target = target)
 
 proc createTemporaryFile*(prefix: string; suffix: string): string =
   ## it SHOULD create the file, but so far, it only returns the filename
@@ -595,7 +598,7 @@ proc bump*(minor = false; major = false; patch = true; release = false;
 proc projectVersion*(hint = ""): Option[Version] {.compileTime.} =
   ## try to get the version from the current (compile-time) project
   let
-    target = findTargetWith(macros.getProjectPath(), compileCurrentDir, hint)
+    target = findTargetWith(macros.getProjectPath(), safeCurrentDir, hint)
 
   if target.found.isNone:
     macros.warning target.message
