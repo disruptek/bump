@@ -94,10 +94,12 @@ suite "bump":
 
   test "strange user-supplied versions do not parse":
     check parseVersion("""version = "-1.2.3"""").isNone
-    check parseVersion("""version = "12.3"""").isNone
     check parseVersion("""version = "123"""").isNone
     check parseVersion("""version = "steve"""").isNone
     check parseVersion("""version = "v0.3.0"""").isNone
+
+  test "strange user-supplied versions that DO parse":
+    check $parseVersion("""version = "12.3"""").get == "12.3.0"
 
   test "find a version at compile-time":
     const

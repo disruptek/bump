@@ -218,9 +218,12 @@ proc parseVersion*(nimble: string): Option[Version] =
       fields = line.split('=')
     if fields.len != 2:
       continue
-    let
+    var
       dotted = fields[1].replace("\"").strip.split('.')
-    if dotted.len != 3:
+    case dotted.len:
+    of 3: discard
+    of 2: dotted.add "0"
+    else:
       continue
     try:
       result = (major: dotted[0].parseUInt,
