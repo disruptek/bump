@@ -846,18 +846,29 @@ function main() {
     title="relativeParentPath(dir: string): string"><wbr />relative<wbr />Parent<wbr />Path<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#isFilesystemRoot%2Cstring"
     title="isFilesystemRoot(dir: string): bool"><wbr />is<wbr />Filesystem<wbr />Root<span class="attachedType"></span></a></li>
+  <li><a class="reference" href="#newTarget%2Cstring"
+    title="newTarget(path: string): Target"><wbr />new<wbr />Target<span class="attachedType">Target</span></a></li>
   <li><a class="reference" href="#findTarget%2Cstring%2Cstring"
     title="findTarget(dir: string; target = &quot;&quot;): SearchResult"><wbr />find<wbr />Target<span class="attachedType">SearchResult</span></a></li>
+  <li><a class="reference" href="#findTarget%2Cstring%2Cstring%2Cseq%5BT%5D%5Bstring%5D"
+    title="findTarget(dir: string; target = &quot;&quot;; extensions: seq[string]): SearchResult"><wbr />find<wbr />Target<span class="attachedType">SearchResult</span></a></li>
   <li><a class="reference" href="#createTemporaryFile%2Cstring%2Cstring"
     title="createTemporaryFile(prefix: string; suffix: string): string"><wbr />create<wbr />Temporary<wbr />File<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#isValid%2CVersion"
     title="isValid(ver: Version): bool"><wbr />is<wbr />Valid<span class="attachedType">Version</span></a></li>
+  <li><a class="reference" href="#%3E%2CVersion%2CVersion"
+    title="`&gt;`(a, b: Version): bool"><wbr />`&gt;`<span class="attachedType">Version</span></a></li>
+  <li><a class="reference" href="#%3D%3D%2CVersion%2CVersion"
+    title="`==`(a, b: Version): bool"><wbr />`==`<span class="attachedType">Version</span></a></li>
   <li><a class="reference" href="#parseVersion%2Cstring"
     title="parseVersion(nimble: string): Option[Version]"><wbr />parse<wbr />Version<span class="attachedType">Version</span></a></li>
   <li><a class="reference" href="#bumpVersion%2CVersion"
     title="bumpVersion(ver: Version; major, minor, patch = false): Option[Version]"><wbr />bump<wbr />Version<span class="attachedType">Version</span></a></li>
   <li><a class="reference" href="#withCrazySpaces%2CVersion%2Cstring"
     title="withCrazySpaces(version: Version; line = &quot;&quot;): string"><wbr />with<wbr />Crazy<wbr />Spaces<span class="attachedType">Version</span></a></li>
+  <li><a class="reference" href="#capture%2Cstring%2Cseq%5BT%5D%5Bstring%5D%2Cset%5BProcessOption%5D"
+    title="capture(exe: string; args: seq[string]; options: set[ProcessOption]): tuple[
+    output: string, ok: bool]"><wbr />capture<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#capture%2Cstring%2Cseq%5BT%5D%5Bstring%5D"
     title="capture(exe: string; args: seq[string]): tuple[output: string, ok: bool]"><wbr />capture<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#run%2Cstring%2Cvarargs%5Bstring%5D"
@@ -948,12 +959,27 @@ the parent directory as expressed relative to the directory supplied
 true if there are no higher directories in the fs tree
 
 </dd>
+<a id="newTarget,string"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#newTarget%2Cstring"><span class="Identifier">newTarget</span></a><span class="Other">(</span><span class="Identifier">path</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">)</span><span class="Other">:</span> <a href="bump.html#Target"><span class="Identifier">Target</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+
+</dd>
 <a id="findTarget,string,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#findTarget%2Cstring%2Cstring"><span class="Identifier">findTarget</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">target</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <a href="bump.html#SearchResult"><span class="Identifier">SearchResult</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 locate one, and only one, nimble file to work upon; dir is where to start looking, target is a .nimble or package name
+
+</dd>
+<a id="findTarget,string,string,seq[T][string]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#findTarget%2Cstring%2Cstring%2Cseq%5BT%5D%5Bstring%5D"><span class="Identifier">findTarget</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">target</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">extensions</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="bump.html#SearchResult"><span class="Identifier">SearchResult</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+locate one, and only one, nimble file to work upon; dir is where to start looking, target is a .nimble or package name, extensions list optional extensions (such as &quot;nimble&quot;)
 
 </dd>
 <a id="createTemporaryFile,string,string"></a>
@@ -969,6 +995,20 @@ it SHOULD create the file, but so far, it only returns the filename
 <dd>
 
 true if the version seems legit
+
+</dd>
+<a id=">,Version,Version"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%3E%2CVersion%2CVersion"><span class="Identifier">`&gt;`</span></a><span class="Other">(</span><span class="Identifier">a</span><span class="Other">,</span> <span class="Identifier">b</span><span class="Other">:</span> <a href="bump.html#Version"><span class="Identifier">Version</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
+
+</dd>
+<a id="==,Version,Version"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#%3D%3D%2CVersion%2CVersion"><span class="Identifier">`==`</span></a><span class="Other">(</span><span class="Identifier">a</span><span class="Other">,</span> <span class="Identifier">b</span><span class="Other">:</span> <a href="bump.html#Version"><span class="Identifier">Version</span></a><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">bool</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">inline</span><span class="Other">,</span> <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+
 
 </dd>
 <a id="parseVersion,string"></a>
@@ -995,13 +1035,22 @@ increment the version by the specified metric
 insert a new version into a line which may have &quot;crazy spaces&quot;
 
 </dd>
+<a id="capture,string,seq[T][string],set[ProcessOption]"></a>
+<dt><pre><span class="Keyword">proc</span> <a href="#capture%2Cstring%2Cseq%5BT%5D%5Bstring%5D%2Cset%5BProcessOption%5D"><span class="Identifier">capture</span></a><span class="Other">(</span><span class="Identifier">exe</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">args</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">;</span> <span class="Identifier">options</span><span class="Other">:</span> <span class="Identifier">set</span><span class="Other">[</span><span class="Identifier">ProcessOption</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span>
+    <span class="Identifier">output</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">ok</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">Defect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span>
+    <span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+<dd>
+
+capture output of a command+args and indicate apparent success
+
+</dd>
 <a id="capture,string,seq[T][string]"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#capture%2Cstring%2Cseq%5BT%5D%5Bstring%5D"><span class="Identifier">capture</span></a><span class="Other">(</span><span class="Identifier">exe</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">args</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <span class="Keyword">tuple</span><span class="Other">[</span><span class="Identifier">output</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">,</span> <span class="Identifier">ok</span><span class="Other">:</span> <span class="Identifier">bool</span><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">OSError</span><span class="Other">,</span> <span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">Exception</span><span class="Other">,</span> <span class="Identifier">IOError</span><span class="Other">,</span> <span class="Identifier">Defect</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span>
     <span class="Identifier">ReadEnvEffect</span><span class="Other">,</span> <span class="Identifier">ReadIOEffect</span><span class="Other">,</span> <span class="Identifier">RootEffect</span><span class="Other">,</span> <span class="Identifier">ExecIOEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
-find and run a given executable with the given arguments; the result includes stdout and a true value if it seemed to work; else it includes a mixture of stderr and stdout and a falsey <tt class="docutils literal"><span class="pre">ok</span></tt>
+find and run a given executable with the given arguments; the result includes stdout/stderr and a true value if it seemed to work
 
 </dd>
 <a id="run,string,varargs[string]"></a>
@@ -1087,7 +1136,7 @@ the entry point from the cli
 </dd>
 <a id="projectVersion,string"></a>
 <dt><pre><span class="Keyword">proc</span> <a href="#projectVersion%2Cstring"><span class="Identifier">projectVersion</span></a><span class="Other">(</span><span class="Identifier">hint</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">)</span><span class="Other">:</span> <span class="Identifier">Option</span><span class="Other">[</span><a href="bump.html#Version"><span class="Identifier">Version</span></a><span class="Other">]</span> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma"><span class="Identifier">compileTime</span><span class="Other">,</span>
-    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
+    <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
 try to get the version from the current (compile-time) project
@@ -1103,7 +1152,7 @@ try to get the version from the current (compile-time) project
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small>Made with Nim. Generated: 2019-11-03 15:16:57 UTC</small>
+        <small>Made with Nim. Generated: 2019-11-16 03:14:57 UTC</small>
       </div>
     </div>
   </div>
