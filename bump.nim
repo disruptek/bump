@@ -200,7 +200,7 @@ proc createTemporaryFile*(prefix: string; suffix: string): string =
 
 proc isValid*(ver: Version): bool =
   ## true if the version seems legit
-  result = ver.major > 0 or ver.minor > 0 or ver.patch > 0
+  result = ver.major > 0'u or ver.minor > 0'u or ver.patch > 0'u
 
 proc `>`*(a, b: Version): bool {.inline.} =
   result = a.major > b.major or a.minor > b.minor or a.patch > b.patch
