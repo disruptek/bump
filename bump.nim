@@ -105,8 +105,8 @@ proc newTarget*(path: string): Target =
   let splat = path.splitFile
   result = (repo: splat.dir, package: splat.name, ext: splat.ext)
 
-proc findTargetWith(dir: string; cwd: proc (): string;
-                    target = ""; extensions = defaultExts): SearchResult =
+proc findTargetWith(dir: string; cwd: proc (): string; target = "";
+                    ascend = true; extensions = defaultExts): SearchResult =
   ## locate one, and only one, nimble file to work upon; dir is where
   ## to start looking, target is a .nimble or package name
 
@@ -155,7 +155,7 @@ proc findTargetWith(dir: string; cwd: proc (): string;
       break
 
   # we might be good to go, here
-  if result.found.isSome:
+  if result.found.isSome or not ascend:
     return
 
   # otherwise, maybe we can recurse up the directory tree.
@@ -185,13 +185,13 @@ proc findTarget*(dir: string; target = ""): SearchResult =
   ## to start looking, target is a .nimble or package name
   result = findTargetWith(dir, safeCurrentDir, target = target)
 
-proc findTarget*(dir: string; target = "";
+proc findTarget*(dir: string; target = ""; ascend = true;
                  extensions: seq[string]): SearchResult =
   ## locate one, and only one, nimble file to work upon; dir is where
   ## to start looking, target is a .nimble or package name,
   ## extensions list optional extensions (such as "nimble")
   result = findTargetWith(dir, safeCurrentDir, target = target,
-                          extensions = extensions)
+                          ascend = ascend, extensions = extensions)
 
 proc createTemporaryFile*(prefix: string; suffix: string): string =
   ## it SHOULD create the file, but so far, it only returns the filename
