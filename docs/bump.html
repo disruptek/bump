@@ -851,7 +851,7 @@ function main() {
   <li><a class="reference" href="#findTarget%2Cstring%2Cstring"
     title="findTarget(dir: string; target = &quot;&quot;): SearchResult"><wbr />find<wbr />Target<span class="attachedType">SearchResult</span></a></li>
   <li><a class="reference" href="#findTarget%2Cstring%2Cstring%2Cseq%5BT%5D%5Bstring%5D"
-    title="findTarget(dir: string; target = &quot;&quot;; extensions: seq[string]): SearchResult"><wbr />find<wbr />Target<span class="attachedType">SearchResult</span></a></li>
+    title="findTarget(dir: string; target = &quot;&quot;; ascend = true; extensions: seq[string]): SearchResult"><wbr />find<wbr />Target<span class="attachedType">SearchResult</span></a></li>
   <li><a class="reference" href="#createTemporaryFile%2Cstring%2Cstring"
     title="createTemporaryFile(prefix: string; suffix: string): string"><wbr />create<wbr />Temporary<wbr />File<span class="attachedType"></span></a></li>
   <li><a class="reference" href="#isValid%2CVersion"
@@ -975,7 +975,7 @@ locate one, and only one, nimble file to work upon; dir is where to start lookin
 
 </dd>
 <a id="findTarget,string,string,seq[T][string]"></a>
-<dt><pre><span class="Keyword">proc</span> <a href="#findTarget%2Cstring%2Cstring%2Cseq%5BT%5D%5Bstring%5D"><span class="Identifier">findTarget</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">target</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">extensions</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="bump.html#SearchResult"><span class="Identifier">SearchResult</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
+<dt><pre><span class="Keyword">proc</span> <a href="#findTarget%2Cstring%2Cstring%2Cseq%5BT%5D%5Bstring%5D"><span class="Identifier">findTarget</span></a><span class="Other">(</span><span class="Identifier">dir</span><span class="Other">:</span> <span class="Identifier">string</span><span class="Other">;</span> <span class="Identifier">target</span> <span class="Other">=</span> <span class="StringLit">&quot;&quot;</span><span class="Other">;</span> <span class="Identifier">ascend</span> <span class="Other">=</span> <span class="Identifier">true</span><span class="Other">;</span> <span class="Identifier">extensions</span><span class="Other">:</span> <span class="Identifier">seq</span><span class="Other">[</span><span class="Identifier">string</span><span class="Other">]</span><span class="Other">)</span><span class="Other">:</span> <a href="bump.html#SearchResult"><span class="Identifier">SearchResult</span></a> <span><span class="Other">{</span><span class="Other pragmadots">...</span><span class="Other">}</span></span><span class="pragmawrap"><span class="Other">{.</span><span class="pragma">
     <span class="Identifier">raises</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ValueError</span><span class="Other">,</span> <span class="Identifier">UnpackError</span><span class="Other">,</span> <span class="Identifier">OSError</span><span class="Other">]</span><span class="Other">,</span> <span class="Identifier">tags</span><span class="Other">:</span> <span class="Other">[</span><span class="Identifier">ReadDirEffect</span><span class="Other">,</span> <span class="Identifier">ReadEnvEffect</span><span class="Other">]</span></span><span class="Other">.}</span></span></pre></dt>
 <dd>
 
@@ -1152,7 +1152,7 @@ try to get the version from the current (compile-time) project
       <div class="twelve-columns footer">
         <span class="nim-sprite"></span>
         <br/>
-        <small>Made with Nim. Generated: 2019-11-16 03:14:57 UTC</small>
+        <small>Made with Nim. Generated: 2019-11-26 04:50:13 UTC</small>
       </div>
     </div>
   </div>
