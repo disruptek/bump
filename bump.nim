@@ -615,6 +615,21 @@ when isMainModule:
     logger = newCuteConsoleLogger()
   addHandler(logger)
 
+  const logo = """
+
+      __
+     / /_  __  ______ ___  ____
+    / __ \/ / / / __ `__ \/ __ \
+   / /_/ / /_/ / / / / / / /_/ /
+  /_.___/\__,_/_/ /_/ /_/ .___/
+                       /_/
+
+  Increment the version of a nimble package, tag it, and push it via git
+
+  Usage:
+    bump [optional-params] [message: string...]
+
+  """
   # find the version of bump itself, whatfer --version reasons
   const
     version = projectVersion()
@@ -624,8 +639,7 @@ when isMainModule:
     clCfg.version = "(unknown version)"
 
   dispatchCf bump, cmdName = "bump", cf = clCfg,
-    doc = "increment the version of a nimble package, " &
-          "tag it, and push it via git",
+    usage = logo & "Options(opt-arg sep :|=|spc):\n$options",
     help = {
       "patch": "increment the patch version field",
       "minor": "increment the minor version field",
