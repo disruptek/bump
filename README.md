@@ -6,7 +6,7 @@ It just **bumps** the value of the `version` in your `.nimble` file, commits it,
 
 For an explanation of the "social contract" that is semantic versioning, see https://semver.org/
 
-**Note:** I only test bump on Linux against `git v2.23.0`, but it seems to work against `git v2.17.0`.  Platform-specific code in the tool:
+**Note:** I only test bump on Linux against `git v2.23.0`, but it seems to work against `git v2.17.0`.  It has also been tested on OS X with `git v2.23.0`.  Platform-specific code in the tool:
 
 1. we identify your current working directory differently on `macos` and `genode`, and perhaps some day, other platforms as well.
 

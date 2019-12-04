@@ -4,10 +4,10 @@ import osproc
 import strutils
 import strformat
 import nre
-import logging
 
 from macros import nil
 
+import cutelog
 
 type
   Version* = tuple
@@ -24,9 +24,6 @@ type
     message: string
     found: Option[Target]
 
-  CuteLogger = ref object of Logger
-    forward: Logger
-
 const
   dotNimble = "".addFileExt("nimble")
   defaultExts = @["nimble"]
@@ -39,34 +36,6 @@ const
       lvlNotice
     else:
       lvlInfo
-
-method log(logger: CuteLogger; level: Level; args: varargs[string, `$`])
-  {.locks: "unknown", raises: [].} =
-  ## anything that isn't fatal gets a cute emoji
-  var
-    prefix: string
-    arguments: seq[string]
-  for a in args:
-    arguments.add a
-  case level:
-  of lvlFatal:   # use this level for our most critical outputs
-    prefix = ""  # and don't prefix them with a glyph
-  of lvlError:
-    prefix = "💥"
-  of lvlWarn:
-    prefix = "⚠️"
-  of lvlNotice:
-    prefix = "❌"
-  of lvlInfo:
-    prefix = "✔️"
-  of lvlDebug:
-    prefix = "🐛"
-  of lvlAll, lvlNone:  # fwiw, this method is never called with these
-    discard
-  try:
-    logger.forward.log(level, prefix & arguments.join(" "))
-  except:
-    discard
 
 template crash(why: string) =
   ## a good way to exit bump()
@@ -643,9 +612,7 @@ when isMainModule:
   import cligen
 
   let
-    console = newConsoleLogger(levelThreshold = lvlAll,
-                               useStderr = true, fmtStr = "")
-    logger = CuteLogger(forward: console)
+    logger = newCuteConsoleLogger()
   addHandler(logger)
 
   # find the version of bump itself, whatfer --version reasons
