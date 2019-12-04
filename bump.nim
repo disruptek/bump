@@ -647,40 +647,22 @@ when isMainModule:
                                useStderr = true, fmtStr = "")
     logger = CuteLogger(forward: console)
   addHandler(logger)
-  
-  const helper = """
 
-    __
-   / /_  __  ______ ___  ____
-  / __ \/ / / / __ `__ \/ __ \
- / /_/ / /_/ / / / / / / /_/ /
-/_.___/\__,_/_/ /_/ /_/ .___/
-                     /_/
+  const logo = """
 
-Increment the version of a nimble package, tag it, and push it via git
+      __
+     / /_  __  ______ ___  ____
+    / __ \/ / / / __ `__ \/ __ \
+   / /_/ / /_/ / / / / / / /_/ /
+  /_.___/\__,_/_/ /_/ /_/ .___/
+                       /_/
 
-Usage:
-  bump [optional-params] [message: string...]
+  Increment the version of a nimble package, tag it, and push it via git
 
-Options(opt-arg sep :|=|spc):
-  -h,  --help                            print this cligen-erated help
-       --help-syntax                     advanced: prepend,plurals,..
-       --version      bool    false      print version
-  -m,  --minor        bool    false      increment the minor version field
-       --major        bool    false      increment the major version field
-  -p,  --patch        bool    true       increment the patch version field
-  -r,  --release      bool    false      also use `hub` to issue a GitHub release
-  -d,  --dry-run      bool    false      just report the projected version
-  -f=, --folder=      string  ""         specify the location of the nimble file
-  -n=, --nimble=      string  ""         specify the nimble file to modify
-  -l=, --log-level=   Level   lvlNotice  specify Nim logging level
-  -c,  --commit       bool    false      also commit any other unstaged changes
-  -v,  --v            bool    false      prefix the version tag with an ugly `v`
-       --manual=      string  ""         manually set the new version to #.#.#
+  Usage:
+    bump [optional-params] [message: string...]
 
-"""
-
-
+  """
   # find the version of bump itself, whatfer --version reasons
   const
     version = projectVersion()
@@ -690,4 +672,17 @@ Options(opt-arg sep :|=|spc):
     clCfg.version = "(unknown version)"
 
   dispatchCf bump, cmdName = "bump", cf = clCfg,
-    usage = helper
+    usage = logo & "Options(opt-arg sep :|=|spc):\n$options",
+    help = {
+      "patch": "increment the patch version field",
+      "minor": "increment the minor version field",
+      "major": "increment the major version field",
+      "dry-run": "just report the projected version",
+      "commit": "also commit any other unstaged changes",
+      "v": "prefix the version tag with an ugly `v`",
+      "nimble": "specify the nimble file to modify",
+      "folder": "specify the location of the nimble file",
+      "release": "also use `hub` to issue a GitHub release",
+      "log-level": "specify Nim logging level",
+      "manual": "manually set the new version to #.#.#",
+    }
