@@ -171,12 +171,6 @@ proc isValid*(ver: Version): bool =
   ## true if the version seems legit
   result = ver.major > 0'u or ver.minor > 0'u or ver.patch > 0'u
 
-proc `>`*(a, b: Version): bool {.inline.} =
-  result = a.major > b.major or a.minor > b.minor or a.patch > b.patch
-
-proc `==`*(a, b: Version): bool {.inline.} =
-  result = a.major == b.major and a.minor == b.minor and a.patch == b.patch
-
 proc parseVersion*(nimble: string): Option[Version] =
   ## try to parse a version from any line in a .nimble;
   ## safe to use at compile-time

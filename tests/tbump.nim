@@ -141,6 +141,9 @@ suite "bump":
   test "version comparison":
     check ver123 < ver155
     check ver170 > ver123
+    check ver171 > ver170
+    check ver170 < ver171
+    check ver456 > ver170
     check ver170 != (1'u, 2'u, 3'u)
     check ver170 == (1'u, 7'u, 0'u)
     check ver170 <= (1'u, 7'u, 0'u)
