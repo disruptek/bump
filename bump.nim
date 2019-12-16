@@ -362,7 +362,7 @@ proc shouldSearch(folder: string; nimble: string):
   debug &"should search `{dir}` for `{file}`"
   result = (dir: dir, file: file).some
 
-proc pluckVAndDot(input: string): string =
+proc pluckVAndDot*(input: string): string =
   ## return any `V` or `v` prefix, perhaps with an existing `.`
   if input[0] notin {'V', 'v'}:
     result = ""
