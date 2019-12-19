@@ -364,7 +364,7 @@ proc shouldSearch(folder: string; nimble: string):
 
 proc pluckVAndDot*(input: string): string =
   ## return any `V` or `v` prefix, perhaps with an existing `.`
-  if input[0] notin {'V', 'v'}:
+  if input.len == 0 or input[0] notin {'V', 'v'}:
     result = ""
   elif input[1] == '.':
     result = input[0 .. 1]
