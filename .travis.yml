@@ -6,7 +6,8 @@ os:
 language: c
 
 env:
-  - BRANCH=0.20.0
+  - BRANCH=0.19.6
+  - BRANCH=0.20.2
   - BRANCH=1.0.4
   - BRANCH=devel
 
