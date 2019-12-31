@@ -1,11 +1,11 @@
-import os
-import options
-import osproc
-import strutils
-import strformat
-import nre
+import std/os
+import std/options
+import std/osproc
+import std/strutils
+import std/strformat
+import std/nre
 
-from macros import nil
+from std/macros import nil
 
 import cutelog
 
