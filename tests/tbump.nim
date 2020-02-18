@@ -12,6 +12,7 @@ suite "bump":
       ver155 {.used.} = (major: 1'u, minor: 5'u, patch: 5'u)
       ver170 {.used.} = (major: 1'u, minor: 7'u, patch: 0'u)
       ver180 {.used.} = (major: 1'u, minor: 8'u, patch: 0'u)
+      ver1819 {.used.} = (major: 1'u, minor: 8'u, patch: 19'u)
       ver171 {.used.} = (major: 1'u, minor: 7'u, patch: 1'u)
       ver456 {.used.} = (major: 4'u, minor: 5'u, patch: 6'u)
       ver457 {.used.} = (major: 4'u, minor: 5'u, patch: 7'u)
@@ -61,9 +62,9 @@ suite "bump":
   test "identify tags for arbitrary versions":
     let
       tagList = fetchTagList()
-      isTagged {.used.} = ver180.taggedAs(tagList.get)
+      isTagged {.used.} = ver1819.taggedAs(tagList.get)
       notTagged {.used.} = ver155.taggedAs(tagList.get)
-    check isTagged.isSome and isTagged.get == "1.8.0"
+    check isTagged.isSome and isTagged.get == "1.8.19"
     check notTagged.isNone
 
   test "last tag in the tag list":
