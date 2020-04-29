@@ -1,6 +1,6 @@
 # bump
-- `gc:refc` [![Build Status](https://travis-ci.org/disruptek/bump.svg?branch=master)](https://travis-ci.org/disruptek/bump)
-- `gc:arc` [![Build Status](https://travis-ci.org/disruptek/bump.svg?branch=master)](https://travis-ci.org/disruptek/bump)
+- `gc:refc +/ cpp +/ nim-1.0` [![Build Status](https://travis-ci.org/disruptek/bump.svg?branch=master)](https://travis-ci.org/disruptek/bump)
+- `arc +/ cpp +/ nim-1.3` [![Build Status](https://travis-ci.org/disruptek/bump.svg?branch=devel)](https://travis-ci.org/disruptek/bump)
 
 It just **bumps** the value of the `version` in your `.nimble` file, commits it, tags it, and pushes it.
 
