@@ -347,12 +347,12 @@ proc shouldSearch(folder: string; nimble: string):
     dir = folder
     file = nimble
   # by now, we at least know where we're gonna be looking
-  if not existsDir(dir):
+  if not dirExists(dir):
     warn &"`{dir}` is not a directory"
     return
   # try to look for a .nimble file just in case
   # we can identify it quickly and easily here
-  while file != "" and not existsFile(dir / file):
+  while file != "" and not fileExists(dir / file):
     if file.endsWith(dotNimble):
       # a file was specified but we cannot find it, even given
       # a reasonable directory and the addition of .nimble
