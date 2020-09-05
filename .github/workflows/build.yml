@@ -110,10 +110,7 @@ jobs:
           architecture: ${{ matrix.arch }}
           distribution: ubuntu18.04
           # Put env vars shared across all matrices here
-          env:
-            USE_CHOOSENIM: no
-            NIM_VERSION: ${{ matrix.nim_version }}
-            NIM_CI_VERSION: github-workflows
+          env: USE_CHOOSENIM=no NIM_VERSION=${{ matrix.nim_version }} NIM_CI_VERSION=github-workflows
           additionalArgs:
             -v /home/runner/.nimble-linux_${{ matrix.arch }}:/root/.nimble
           run: |
