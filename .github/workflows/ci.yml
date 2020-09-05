@@ -115,6 +115,10 @@ jobs:
           cd nim
           nim c koch
           ./koch boot -d:release
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            curl --output dlls.zip 'https://nim-lang.org/download/dlls.zip'
+            unzip -j dlls.zip -d bin
+          fi
           ./koch tools -d:release
           # clean up to save cache space
           rm koch
