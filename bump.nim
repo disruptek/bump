@@ -632,7 +632,7 @@ when isMainModule:
   else:
     clCfg.version = "(unknown version)"
 
-  dispatchCf bump, cmdName = "bump", cf = clCfg,
+  dispatchCf bump, cmdName = "bump", cf = clCfg, noHdr = true,
     usage = logo & "Options(opt-arg sep :|=|spc):\n$options",
     help = {
       "patch": "increment the patch version field",

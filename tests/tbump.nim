@@ -1,7 +1,7 @@
-import os
-import strutils
-import options
-import unittest
+import std/os
+import std/strutils
+import std/options
+import std/unittest
 
 import bump
 

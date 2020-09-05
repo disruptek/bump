@@ -1,1 +1,4 @@
 tests/tbump
+nimblemeta.json
+bin/
+nim.cfg
