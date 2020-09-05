@@ -1,0 +1,126 @@
+name: Build
+
+on:
+  push:
+    branches: [ '*' ]
+    tags: [ '*' ]
+  pull_request:
+    branches: [ '*' ]
+
+jobs:
+  build:
+    name: Build ${{ matrix.nim_host_os }}_amd64
+    runs-on: ${{ matrix.builder }}
+
+    strategy:
+      matrix:
+        include:
+          - nim_host_os: linux # Match nim's system.hostOS values
+            builder: ubuntu-latest
+            nim_version: devel
+          - nim_host_os: macosx # Match nim's system.hostOS values
+            builder: macos-latest
+            nim_version: devel
+          - nim_host_os: windows # Match nim's system.hostOS values
+            builder: windows-latest
+            nim_version: devel
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1000
+          submodules: recursive
+
+      - name: Setup cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.choosenim
+            ~/.nimble
+          key: build-${{ runner.os }}
+
+      - name: Install & build
+        id: build
+        env:
+          # Put env vars shared across all matrices here
+          NIM_VERSION: ${{ matrix.nim_version }}
+          NIM_CI_VERSION: github-workflows # or vX.Y.Z to lock to a specific nim-ci version
+        shell: bash
+        run: |
+          curl https://raw.githubusercontent.com/elijahr/nim-ci/${NIM_CI_VERSION}/nim-ci.sh -LsSf > nim-ci.sh
+          source nim-ci.sh
+
+          all_the_things
+
+      - name: Upload packages
+        if: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v2
+        with:
+          path: ${{ steps.build.outputs.ZIP_PATH }}
+
+  # Build for Linux aarch64 (arm64), ppc64le, etc
+  build-other-archs:
+    name: Build ${{ matrix.nim_host_os }}_${{ matrix.nim_host_cpu }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - nim_host_os: linux # Match nim's system.hostCPU values
+            nim_host_cpu: arm64 # Match nim's system.hostOS values
+            arch: aarch64 # What run-on-arch-action expects
+            nim_version: stable # The version of Nim to test with
+          # - nim_host_os: linux
+          #   nim_host_cpu: powerpc64el
+          #   arch: ppc64le
+          #   nim_version: stable
+
+    steps:
+      - name: Make dirs
+        run: |
+          mkdir -p ~/.choosenim-${{ matrix.arch }}
+          mkdir -p ~/.nimble-${{ matrix.arch }}
+
+      - name: Setup cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.choosenim-linux_${{ matrix.arch }}
+            ~/.nimble-linux_${{ matrix.arch }}
+          key: build-other-archs
+
+      # Use run-on-arch-action to emulate the CPU architecture.
+      # See https://github.com/uraimo/run-on-arch-action for docs.
+      - name: Build
+        id: build
+        uses: elijahr/run-on-arch-action@env-vars
+        with:
+          architecture: ${{ matrix.arch }}
+          distribution: ubuntu18.04
+          # Put env vars shared across all matrices here
+          env: NIM_VERSION=${{ matrix.nim_version }} NIM_CI_VERSION=github-workflows
+          additionalArgs:
+            -v /home/runner/.choosenim-linux_${{ matrix.arch }}:/root/.choosenim
+            -v /home/runner/.nimble-linux_${{ matrix.arch }}:/root/.nimble
+          run: |
+            # Install system package
+            apt-get update -q
+            apt-get install -q -y build-essential git curl bash
+
+            # Checkout repo
+            ref=$(basename $GITHUB_REF)
+            git clone -b $ref --single-branch "https://github.com/${GITHUB_REPOSITORY}.git" repo
+
+            cd repo
+
+            curl https://raw.githubusercontent.com/elijahr/nim-ci/${NIM_CI_VERSION}/nim-ci.sh -LsSf > nim-ci.sh
+            source nim-ci.sh
+
+            all_the_things
+
+      - name: Upload zipball
+        if: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v2
+        with:
+          path: ${{ steps.build.outputs.ZIP_PATH }}
