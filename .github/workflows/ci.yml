@@ -126,6 +126,7 @@ jobs:
         shell: bash
         run: |
           cd bump
+          git fetch --all
           nimble --accept build
           nimble test
 
