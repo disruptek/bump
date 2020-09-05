@@ -17,6 +17,15 @@ jobs:
         include:
           - nim_host_os: linux # Match nim's system.hostOS values
             builder: ubuntu-latest
+            nim_version: stable
+          - nim_host_os: macosx # Match nim's system.hostOS values
+            builder: macos-latest
+            nim_version: stable
+          - nim_host_os: windows # Match nim's system.hostOS values
+            builder: windows-latest
+            nim_version: stable
+          - nim_host_os: linux # Match nim's system.hostOS values
+            builder: ubuntu-latest
             nim_version: devel
           - nim_host_os: macosx # Match nim's system.hostOS values
             builder: macos-latest
@@ -36,7 +45,6 @@ jobs:
         uses: actions/cache@v2
         with:
           path: |
-            ~/.choosenim
             ~/.nimble
           key: build-${{ runner.os }}
 
@@ -44,6 +52,7 @@ jobs:
         id: build
         env:
           # Put env vars shared across all matrices here
+          USE_CHOOSENIM: no
           NIM_VERSION: ${{ matrix.nim_version }}
           NIM_CI_VERSION: github-workflows # or vX.Y.Z to lock to a specific nim-ci version
         shell: bash
@@ -71,6 +80,10 @@ jobs:
             nim_host_cpu: arm64 # Match nim's system.hostOS values
             arch: aarch64 # What run-on-arch-action expects
             nim_version: stable # The version of Nim to test with
+          - nim_host_os: linux # Match nim's system.hostCPU values
+            nim_host_cpu: arm64 # Match nim's system.hostOS values
+            arch: aarch64 # What run-on-arch-action expects
+            nim_version: devel # The version of Nim to test with
           # - nim_host_os: linux
           #   nim_host_cpu: powerpc64el
           #   arch: ppc64le
@@ -79,14 +92,12 @@ jobs:
     steps:
       - name: Make dirs
         run: |
-          mkdir -p ~/.choosenim-${{ matrix.arch }}
           mkdir -p ~/.nimble-${{ matrix.arch }}
 
       - name: Setup cache
         uses: actions/cache@v2
         with:
           path: |
-            ~/.choosenim-linux_${{ matrix.arch }}
             ~/.nimble-linux_${{ matrix.arch }}
           key: build-other-archs
 
@@ -99,9 +110,11 @@ jobs:
           architecture: ${{ matrix.arch }}
           distribution: ubuntu18.04
           # Put env vars shared across all matrices here
-          env: NIM_VERSION=${{ matrix.nim_version }} NIM_CI_VERSION=github-workflows
+          env:
+            USE_CHOOSENIM: no
+            NIM_VERSION: ${{ matrix.nim_version }}
+            NIM_CI_VERSION: github-workflows
           additionalArgs:
-            -v /home/runner/.choosenim-linux_${{ matrix.arch }}:/root/.choosenim
             -v /home/runner/.nimble-linux_${{ matrix.arch }}:/root/.nimble
           run: |
             # Install system package
