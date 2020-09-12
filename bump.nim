@@ -459,6 +459,16 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     debug sought.message
     target = sought.found.get
 
+  # if we're not on the master branch, let's just bail for now
+  let
+    branch = appearsToBeMasterBranch()
+  if branch.isNone:
+    crash "uh oh; i cannot tell if i'm on the master branch"
+  elif not branch.get:
+    crash "i'm afraid to modify any branch that isn't master"
+  else:
+    debug "good; this appears to be the master branch"
+
   # make a temp file in an appropriate spot, with a significant name
   let
     temp = createTemporaryFile(target.package, dotNimble)
@@ -532,16 +542,6 @@ proc bump*(minor = false; major = false; patch = true; release = false;
   if dry_run:
     debug "dry run and done"
     return
-
-  # if we're not on the master branch, let's just bail for now
-  let
-    branch = appearsToBeMasterBranch()
-  if branch.isNone:
-    crash "uh oh; i cannot tell if i'm on the master branch"
-  elif not branch.get:
-    crash "i'm afraid to modify any branch that isn't master"
-  else:
-    debug "good; this appears to be the master branch"
 
   # copy the new .nimble over the old one
   try:
