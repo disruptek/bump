@@ -5,4 +5,4 @@
 [submodule "cligen"]
 	path = cligen
 	url = https://github.com/c-blake/cligen
-	branch = tag/v1.2.0
+	branch = tag/v1.2.2
