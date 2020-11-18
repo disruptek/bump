@@ -52,7 +52,8 @@ jobs:
         shell: bash
         run: |
           cd bump
-          nimble --accept develop
+          git fetch --all
+          nimble --accept build
           nimble test
 
       - name: Build docs
