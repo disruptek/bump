@@ -1,43 +1,42 @@
 import std/os
 import std/strutils
 import std/options
-import std/unittest
 
 import bump
+import testes
 
-suite "bump":
-  setup:
-    let
-      ver123 {.used.} = (major: 1'u, minor: 2'u, patch: 3'u)
-      ver155 {.used.} = (major: 1'u, minor: 5'u, patch: 5'u)
-      ver170 {.used.} = (major: 1'u, minor: 7'u, patch: 0'u)
-      ver180 {.used.} = (major: 1'u, minor: 8'u, patch: 0'u)
-      ver1819 {.used.} = (major: 1'u, minor: 8'u, patch: 19'u)
-      ver171 {.used.} = (major: 1'u, minor: 7'u, patch: 1'u)
-      ver456 {.used.} = (major: 4'u, minor: 5'u, patch: 6'u)
-      ver457 {.used.} = (major: 4'u, minor: 5'u, patch: 7'u)
-      ver789 {.used.} = (major: 7'u, minor: 8'u, patch: 9'u)
-      ver799 {.used.} = (major: 7'u, minor: 9'u, patch: 9'u)
-      aList {.used.} = ""
-      bList {.used.} = """
-        v.1.2.3
-        V.4.5.6
-        v7.8.9
-        V10.11.12
-      """.unindent.strip
-      cList {.used.} = """
-        v.1.2.3
-        4.5.6
-        v7.8.9
-        V10.11.12
-        12.13.14
-      """.unindent.strip
-      crazy {.used.} = @[
-        """version="1.2.3"""",
-        """version      = "1.2.3"""",
-        """version	 			 	= 	 		  "1.2.3"  """,
-        """version = "1.2.3"""",
-      ]
+testes:
+  let
+    ver123 {.used.} = (major: 1'u, minor: 2'u, patch: 3'u)
+    ver155 {.used.} = (major: 1'u, minor: 5'u, patch: 5'u)
+    ver170 {.used.} = (major: 1'u, minor: 7'u, patch: 0'u)
+    ver180 {.used.} = (major: 1'u, minor: 8'u, patch: 0'u)
+    ver1819 {.used.} = (major: 1'u, minor: 8'u, patch: 19'u)
+    ver171 {.used.} = (major: 1'u, minor: 7'u, patch: 1'u)
+    ver456 {.used.} = (major: 4'u, minor: 5'u, patch: 6'u)
+    ver457 {.used.} = (major: 4'u, minor: 5'u, patch: 7'u)
+    ver789 {.used.} = (major: 7'u, minor: 8'u, patch: 9'u)
+    ver799 {.used.} = (major: 7'u, minor: 9'u, patch: 9'u)
+    aList {.used.} = ""
+    bList {.used.} = """
+      v.1.2.3
+      V.4.5.6
+      v7.8.9
+      V10.11.12
+    """.unindent.strip
+    cList {.used.} = """
+      v.1.2.3
+      4.5.6
+      v7.8.9
+      V10.11.12
+      12.13.14
+    """.unindent.strip
+    crazy {.used.} = @[
+      """version="1.2.3"""",
+      """version      = "1.2.3"""",
+      """version	 			 	= 	 		  "1.2.3"  """,
+      """version = "1.2.3"""",
+    ]
 
   test "parse version statement":
     for c in crazy:
@@ -68,8 +67,11 @@ suite "bump":
     check notTagged.isNone
 
   test "last tag in the tag list":
-    expect ValueError:
+    try:
       discard aList.lastTagInTheList
+      check false, "expected a value error"
+    except ValueError:
+      check true, "got a value error as anticipated"
     check bList.lastTagInTheList == "V10.11.12"
     check cList.lastTagInTheList == "12.13.14"
 
