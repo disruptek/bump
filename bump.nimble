@@ -1,10 +1,11 @@
-version = "1.8.25"
+version = "1.8.26"
 author = "disruptek"
 description = "a tiny tool to bump nimble versions"
 license = "MIT"
 
-requires "https://github.com/disruptek/testes >= 0.7.1 & < 1.0.0"
 requires "https://github.com/disruptek/cutelog >= 1.1.2 & < 2.0.0"
+when not defined(release):
+  requires "https://github.com/disruptek/testes >= 1.0.0 & < 2.0.0"
 
 bin = @["bump"]
 
