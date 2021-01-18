@@ -3,9 +3,9 @@ import std/strutils
 import std/options
 
 import bump
-import testes
+import balls
 
-testes:
+suite "tests of bump":
   let
     ver123 {.used.} = (major: 1'u, minor: 2'u, patch: 3'u)
     ver155 {.used.} = (major: 1'u, minor: 5'u, patch: 5'u)
