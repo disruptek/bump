@@ -1,0 +1,27 @@
+Version	bump.html#Version	bump: Version	
+Target	bump.html#Target	bump: Target	
+SearchResult	bump.html#SearchResult	bump: SearchResult	
+`$`	bump.html#$,Target	bump: `$`(target: Target): string	
+`$`	bump.html#$,Version	bump: `$`(ver: Version): string	
+relativeParentPath	bump.html#relativeParentPath,string	bump: relativeParentPath(dir: string): string	
+isFilesystemRoot	bump.html#isFilesystemRoot,string	bump: isFilesystemRoot(dir: string): bool	
+newTarget	bump.html#newTarget,string	bump: newTarget(path: string): Target	
+findTarget	bump.html#findTarget,string,string	bump: findTarget(dir: string; target = &quot;&quot;): SearchResult	
+findTarget	bump.html#findTarget,string,string,seq[string]	bump: findTarget(dir: string; target = &quot;&quot;; ascend = true; extensions: seq[string]): SearchResult	
+createTemporaryFile	bump.html#createTemporaryFile,string,string	bump: createTemporaryFile(prefix: string; suffix: string): string	
+isValid	bump.html#isValid,Version	bump: isValid(ver: Version): bool	
+parseVersion	bump.html#parseVersion,string	bump: parseVersion(nimble: string): Option[Version]	
+bumpVersion	bump.html#bumpVersion,Version	bump: bumpVersion(ver: Version; major, minor, patch = false): Option[Version]	
+withCrazySpaces	bump.html#withCrazySpaces,Version,string	bump: withCrazySpaces(version: Version; line = &quot;&quot;): string	
+capture	bump.html#capture,string,seq[string],set[ProcessOption]	bump: capture(exe: string; args: seq[string]; options: set[ProcessOption]): tuple[\n    output: string, ok: bool]	
+capture	bump.html#capture,string,seq[string]	bump: capture(exe: string; args: seq[string]): tuple[output: string, ok: bool]	
+run	bump.html#run,string,varargs[string]	bump: run(exe: string; args: varargs[string]): bool	
+appearsToBeMasterBranch	bump.html#appearsToBeMasterBranch	bump: appearsToBeMasterBranch(): Option[bool]	
+fetchTagList	bump.html#fetchTagList	bump: fetchTagList(): Option[string]	
+lastTagInTheList	bump.html#lastTagInTheList,string	bump: lastTagInTheList(tagList: string): string	
+taggedAs	bump.html#taggedAs,Version,string	bump: taggedAs(version: Version; tagList: string): Option[string]	
+allTagsAppearToStartWithV	bump.html#allTagsAppearToStartWithV,string	bump: allTagsAppearToStartWithV(tagList: string): bool	
+pluckVAndDot	bump.html#pluckVAndDot,string	bump: pluckVAndDot(input: string): string	
+composeTag	bump.html#composeTag,Version,Version,string	bump: composeTag(last: Version; next: Version; v = false; tags = &quot;&quot;): Option[string]	
+bump	bump.html#bump,string,string,string,seq[string]	bump: bump(minor = false; major = false; patch = true; release = false;\n     dry_run = false; folder = &quot;&quot;; nimble = &quot;&quot;; log_level = logLevel;\n     commit = false; v = false; manual = &quot;&quot;; message: seq[string]): int	
+projectVersion	bump.html#projectVersion,string	bump: projectVersion(hint = &quot;&quot;): Option[Version]	
