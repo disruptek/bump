@@ -263,18 +263,18 @@ proc run*(exe: string; args: varargs[string]): bool =
   result = caught.ok
 
 proc appearsToBeMasterBranch*(): Option[bool] =
-  ## try to determine if we're on the `master` branch
+  ## try to determine if we're on the `master`/`main` branch
   var
     caught = capture("git", @["branch", "--show-current"])
   if caught.ok:
-    result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^master$").some
+    result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^master|main$").some
   else:
     caught = capture("git", @["branch"])
     if not caught.ok:
       notice caught.output
       return
-    result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^\*\smaster$").some
-  debug &"appears to be master branch? {result.get}"
+    result = caught.output.contains(re"(*ANYCRLF)(?m)(?x)^master|main$").some
+  debug &"appears to be master/main branch? {result.get}"
 
 proc fetchTagList*(): Option[string] =
   ## simply retrieve the tags as a string; attempt to use the
@@ -459,15 +459,15 @@ proc bump*(minor = false; major = false; patch = true; release = false;
     debug sought.message
     target = sought.found.get
 
-  # if we're not on the master branch, let's just bail for now
+  # if we're not on the master/main branch, let's just bail for now
   let
     branch = appearsToBeMasterBranch()
   if branch.isNone:
-    crash "uh oh; i cannot tell if i'm on the master branch"
+    crash "uh oh; i cannot tell if i'm on the master/main branch"
   elif not branch.get:
-    crash "i'm afraid to modify any branch that isn't master"
+    crash "i'm afraid to modify any branch that isn't master/main"
   else:
-    debug "good; this appears to be the master branch"
+    debug "good; this appears to be the master/main branch"
 
   # make a temp file in an appropriate spot, with a significant name
   let
