@@ -12,7 +12,7 @@ bin = @["bump"]
 when (NimMajor, NimMinor) >= (1, 3):
   requires "cligen >= 1.2.2 & < 2.0.0"
 else:
-  requires "cligen >= 0.9.46 & < 2.0.0"
+  requires "cligen >= 0.9.46 & < 1.0.0"
 
 task test, "run tests for ci":
   when defined(windows):
