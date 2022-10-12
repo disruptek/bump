@@ -1,8 +1,0 @@
-[submodule "cutelog"]
-	path = cutelog
-	url = https://github.com/disruptek/cutelog
-	branch = tag/1.1.2
-[submodule "cligen"]
-	path = cligen
-	url = https://github.com/c-blake/cligen
-	branch = tag/v1.2.2

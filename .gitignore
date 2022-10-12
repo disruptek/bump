@@ -1,4 +1,4 @@
-tests/tbump
+deps
 nimblemeta.json
 bin/
 nim.cfg
