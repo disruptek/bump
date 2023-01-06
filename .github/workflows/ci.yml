@@ -4,31 +4,57 @@ on:
     - cron: '30 5 * * *'
 
   push:
-    paths:
-      - '**.cfg'
-      - '**.nims'
-      - '**.nim'
-      - '**.nimble'
-      - 'tests/**'
-      - '.github/workflows/ci.yml'
+    branches:
+      - master
   pull_request:
-    paths:
-      - '**.cfg'
-      - '**.nims'
-      - '**.nim'
-      - '**.nimble'
-      - 'tests/**'
-      - '.github/workflows/ci.yml'
+    branches:
+      - '*'
 
 jobs:
+  changes:
+    # Disable the filter on scheduled runs because we don't want to skip those
+    if: github.event_name != 'schedule'
+    continue-on-error: true # Makes sure errors won't stop us
+    runs-on: ubuntu-latest
+    outputs:
+      src: ${{ steps.filter.outputs.src }}
+    steps:
+      # For PRs the path filter check with Github API, so no need to checkout
+      # for them.
+      - if: github.event_name != 'pull_request'
+        name: Checkout (if not PR)
+        uses: actions/checkout@v3
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            src:
+              - '**.cfg'
+              - '**.nims'
+              - '**.nim'
+              - '**.nimble'
+              - 'tests/**'
+              - '.github/workflows/ci.yml'
+
   build:
+    # Build if the files we care about are changed.
+    needs: changes
+    # Make sure to always run regardless of whether the filter success or not.
+    # When the filter fails there won't be an output, so checking for `false`
+    # state is better than checking for `true`.
+    #
+    # The always() function here is required for the job to always run despite
+    # what Github docs said, see: https://github.com/actions/runner/issues/491
+    if: always() && !cancelled() && needs.changes.outputs.src != 'false'
+
     strategy:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
         nim: [version-2-0, version-1-6, version-1-4, version-1-2, version-1-0]
     name: '${{ matrix.os }} (${{ matrix.nim }})'
-    runs-on: ${{ matrix.builder }}
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -74,3 +100,16 @@ jobs:
           build_dir: project/docs
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Set check-required on this
+  success:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    name: 'All check passes'
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        name: 'Fail when previous jobs fails'
+        run: |
+          echo "::error::One of the previous jobs failed"
+          exit 1
