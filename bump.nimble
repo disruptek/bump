@@ -5,13 +5,5 @@ license = "MIT"
 
 requires "https://github.com/disruptek/cutelog >= 2.0.0 & < 3.0.0"
 requires "https://github.com/disruptek/cligen >= 2.0.1 & < 3.0.0"
-when not defined(release):
-  requires "https://github.com/disruptek/balls >= 2.0.0 & < 4.0.0"
 
 bin = @["bump"]
-
-task test, "run tests for ci":
-  when defined(windows):
-    exec "balls.cmd"
-  else:
-    exec findExe"balls"
