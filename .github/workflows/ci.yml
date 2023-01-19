@@ -74,7 +74,7 @@ jobs:
           git fetch --unshallow
           nimble --accept build
           nimble --accept install "https://github.com/disruptek/balls"
-          balls --path='\$projectdir'
+          balls --path="."
 
       - name: Build docs
         if: ${{ matrix.docs }} == 'true'
