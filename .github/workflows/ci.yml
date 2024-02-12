@@ -52,7 +52,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        nim: [devel, version-1-6]
+        nim: [devel, version-2-0, version-1-6]
     name: '${{ matrix.os }} (${{ matrix.nim }})'
     runs-on: ${{ matrix.os }}
     steps:
@@ -73,6 +73,19 @@ jobs:
           cd project
           git fetch --unshallow
           nimble --accept build
+
+      - name: Old Balls
+        if: ${{ matrix.nim }} == 'version-1-6'
+        shell: bash
+        run: |
+          cd project
+          nimble --accept install "https://github.com/disruptek/balls@3.9.11"
+
+      - name: Balls
+        if: ${{ matrix.nim }} != 'version-1-6'
+        shell: bash
+        run: |
+          cd project
           nimble --accept install "https://github.com/disruptek/balls"
 
       - name: Tests
