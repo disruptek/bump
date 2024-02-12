@@ -67,13 +67,18 @@ jobs:
           path: nim
           version: ${{ matrix.nim }}
 
-      - name: Run tests
+      - name: Dependencies
         shell: bash
         run: |
           cd project
           git fetch --unshallow
           nimble --accept build
           nimble --accept install "https://github.com/disruptek/balls"
+
+      - name: Tests
+        shell: bash
+        run: |
+          cd project
           balls --path="."
 
       - name: Build docs
