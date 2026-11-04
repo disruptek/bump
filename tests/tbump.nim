@@ -8,6 +8,7 @@ import balls
 suite "tests of bump":
   let
     ver123 {.used.} = (major: 1'u, minor: 2'u, patch: 3'u)
+    ver124 {.used.} = (major: 1'u, minor: 2'u, patch: 4'u)
     ver155 {.used.} = (major: 1'u, minor: 5'u, patch: 5'u)
     ver170 {.used.} = (major: 1'u, minor: 7'u, patch: 0'u)
     ver180 {.used.} = (major: 1'u, minor: 8'u, patch: 0'u)
@@ -34,7 +35,7 @@ suite "tests of bump":
     crazy {.used.} = @[
       """version="1.2.3"""",
       """version      = "1.2.3"""",
-      """version	 			 	= 	 		  "1.2.3"  """,
+      """version                                        =                         "1.2.3"  """,
       """version = "1.2.3"""",
     ]
 
@@ -95,6 +96,34 @@ suite "tests of bump":
   test "version validity checks out":
     check (0'u, 0'u, 0'u).isValid == false
     check (0'u, 0'u, 1'u).isValid == true
+
+  test "version selector defaults to patch":
+    # no selector given means patch; gives --patch parity with
+    # --minor and --major (issue #19)
+    check versionSelector(false, false, false) ==
+        (major: false, minor: false, patch: true)
+    # explicit selectors pass through unmodified
+    check versionSelector(false, false, true) ==
+        (major: false, minor: false, patch: true)
+    check versionSelector(false, true, false) ==
+        (major: false, minor: true, patch: false)
+    check versionSelector(true, false, false) ==
+        (major: true, minor: false, patch: false)
+    # combinations are honored via bumpVersion's precedence
+    check versionSelector(true, true, true) ==
+        (major: true, minor: true, patch: true)
+
+  test "selector feeds bumpVersion":
+    let
+      implied = versionSelector(false, false, false)
+      explicit = versionSelector(false, false, true)
+      minor = versionSelector(false, true, false)
+    check ver123.bumpVersion(implied.major, implied.minor, implied.patch) ==
+        ver124.some
+    check ver123.bumpVersion(explicit.major, explicit.minor, explicit.patch) ==
+        ver124.some
+    check ver123.bumpVersion(minor.major, minor.minor, minor.patch) ==
+        (major: 1'u, minor: 3'u, patch: 0'u).some
 
   test "strange user-supplied versions do not parse":
     check parseVersion("""version = "-1.2.3"""").isNone
