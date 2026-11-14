@@ -21,7 +21,9 @@ If you had to read that section carefully, please file a bug report with your ve
 
 ## Usage
 
-By default, bump increments the patch number.
+By default, bump increments the patch number. You can also select the
+field explicitly with `--patch`, which has parity with `--minor`
+and `--major`.
 ```
 $ bump
 🎉1.0.1
@@ -137,7 +139,7 @@ Options(opt-arg sep :|=|spc):
   --help-syntax                       advanced: prepend,plurals,..
   -m, --minor        bool    false    increment the minor version field
   --major            bool    false    increment the major version field
-  -p, --patch        bool    true     increment the patch version field
+  -p, --patch        bool    false    increment the patch version field
   -r, --release      bool    false    also use `hub` to issue a GitHub release
   -d, --dry-run      bool    false    just report the projected version
   -f=, --folder=     string  ""       specify the location of the nimble file

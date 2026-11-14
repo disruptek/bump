@@ -204,6 +204,17 @@ proc bumpVersion*(ver: Version; major, minor, patch = false): Option[Version] =
   elif patch:
     result = (ver.major, ver.minor, ver.patch + 1'u).some
 
+proc versionSelector*(major, minor, patch: bool):
+    tuple[major, minor, patch: bool] =
+  ## resolve the version selector implied by the cli flags; a lack of
+  ## arguments means we bump the patch field, which preserves the
+  ## historical default and gives `--patch` parity with `--minor`
+  ## and `--major`; see issue #19
+  if major or minor or patch:
+    result = (major: major, minor: minor, patch: patch)
+  else:
+    result = (major: false, minor: false, patch: true)
+
 proc withCrazySpaces*(version: Version; line = ""): string =
   ## insert a new version into a line which may have "crazy spaces"
   while line != "":
@@ -418,7 +429,7 @@ proc composeTag*(last: Version; next: Version; v = false; tags = ""):
   result = tag.some
   debug &"composed the tag `{result.get}`"
 
-proc bump*(minor = false; major = false; patch = true; release = false;
+proc bump*(minor = false; major = false; patch = false; release = false;
           dry_run = false; folder = ""; nimble = ""; log_level = logLevel;
           commit = false; v = false; manual = ""; message: seq[string]): int =
   ## the entry point from the cli
@@ -498,10 +509,12 @@ proc bump*(minor = false; major = false; patch = true; release = false;
       else:
         debug "current version is", last.get
 
-      # if we haven't set the new version yet, bump the version number
+      # if we haven't set the new version yet, bump the version number;
+      # a lack of a selector implies patch, per issue #19
       if not next.isValid:
         let
-          bumped = last.get.bumpVersion(major, minor, patch)
+          flags = versionSelector(major, minor, patch)
+          bumped = last.get.bumpVersion(flags.major, flags.minor, flags.patch)
         if bumped.isNone:
           crash "version unchanged; specify major, minor, or patch"
         else:
